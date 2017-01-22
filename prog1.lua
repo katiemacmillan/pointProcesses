@@ -20,7 +20,7 @@ require "visual"
 
 -- my routines
 local myip = require "intensity"
-
+local myHist = require "hist"
 -----------
 -- menus --
 -----------
@@ -32,6 +32,7 @@ imageMenu("Point processes",
     {"My Darken", myip.darken},
     {"My Grayscale", myip.grayscale},
     {"Binary", myip.binary},
+    {"Equalize", myHist.equalize},
   }
 )
 start()
