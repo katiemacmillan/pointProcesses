@@ -124,12 +124,12 @@ local function binary( img )
     for c = 1, ncols-2 do
 --      for ch = 0, 2 do
         -- get intensity for each pixel
-        local i = img:at(r,c).yiq[1]
+        local i = img:at(r,c).rgb[0]
         -- default threshold is 128
         if i < 128 then 
-          img:at(r,c).yiq[1] = 0
+          img:at(r,c).rgb[0] = 0
         else 
-          img:at(r,c).yiq[1] = 255
+          img:at(r,c).rgb[0] = 255
         end
   --    end
     end
