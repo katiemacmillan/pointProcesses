@@ -27,11 +27,12 @@ local myHist = require "hist"
 
 imageMenu("Point processes",
   {
-    {"My Negate", myip.negate},
-    {"My Brighten", myip.brighten},
-    {"My Darken", myip.darken},
-    {"My Grayscale", myip.grayscale},
-    {"Binary", myip.binary},
+    {"Negate", myip.negate},
+    {"Brighten", myip.brighten},
+    {"Darken", myip.darken},
+    {"Grayscale", myip.grayscale},
+    {"Binary Threshold", myip.binary,
+      {{name = "binThresh", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
     {"Equalize", myHist.equalize},
   }
 )

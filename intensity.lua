@@ -114,29 +114,39 @@ local function grayscale( img )
 end
 
 -- convert to binary image (doesn't work right)
-local function binary( img )
+local function binary( img, binThresh )
   local nrows, ncols = img.height, img.width
   -- convert to YIQ mode
-  img = color.RGB2YIQ( img )
+  --img = color.RGB2YIQ( img )
 
   -- for each pixel in the image
   for r = 1, nrows-2 do
     for c = 1, ncols-2 do
 --      for ch = 0, 2 do
         -- get intensity for each pixel
-        local i = img:at(r,c).rgb[0]
+        --local i = img:at(r,c).rgb[0]
+        
+        -- use red intensity as 30%, green as %59 and blue as %11 to get grayscale intensity
+        i = (img:at(r,c).rgb[0]*0.3)
+        i = i + (img:at(r,c).rgb[1]*0.59)
+        i = i + (img:at(r,c).rgb[2]*0.11)
         -- default threshold is 128
-        if i < 128 then 
+        if i < binThresh then 
           img:at(r,c).rgb[0] = 0
+          img:at(r,c).rgb[1] = 0
+          img:at(r,c).rgb[2] = 0
         else 
           img:at(r,c).rgb[0] = 255
+          img:at(r,c).rgb[1] = 255
+          img:at(r,c).rgb[2] = 255
         end
   --    end
     end
   end
   
   -- return image as RGB color mode image
-  return color.YIQ2RGB( img )
+  --return color.YIQ2RGB( img )
+  return img
 end
 
 
