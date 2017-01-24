@@ -21,6 +21,8 @@ require "visual"
 -- my routines
 local myip = require "intensity"
 local myHist = require "hist"
+local myPseudo = require "pseudoColor"
+
 -----------
 -- menus --
 -----------
@@ -34,6 +36,7 @@ imageMenu("Point processes",
     {"Binary Threshold", myip.binary,
       {{name = "binThresh", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
     {"Equalize", myHist.equalize},
+    {"PseudoColor - 8", myPseudo.pseudoColor8},
   }
 )
 start()
