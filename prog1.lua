@@ -14,7 +14,7 @@ Date: Spring 2017
 -- LuaIP image processing routines
 
 require "ip"
-require "visual"
+local viz = require "visual"
 
 --local color = require "il.color"
 
@@ -30,6 +30,7 @@ local myPseudo = require "pseudoColor"
 imageMenu("Point processes",
   {
     {"Negate (RGB)", myip.negate},
+    {"Negate (intensity)", myip.negateInt},
     {"Brighten", myip.brighten},
     {"Darken", myip.darken},
     {"Grayscale", myip.grayscale},
@@ -37,7 +38,13 @@ imageMenu("Point processes",
       {{name = "binThresh", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
     {"Equalize", myHist.equalize},
     {"PseudoColor - 8", myPseudo.pseudoColor8},
-    {"Negate (intensity)", myip.negateInt},
+  }
+)
+
+imageMenu("Help",
+  {
+    { "Help", viz.imageMessage( "Help", "Abandon all hope, ye who enter here..." ) },
+    { "About", viz.imageMessage( "Lua Image Point Processing" .. viz.VERSION, "Authors: Katie MacMillan and Forrest Miller\nClass: CSC442 Digital Image Processing\nDate: February 9th, 2017" ) },
   }
 )
 start()
