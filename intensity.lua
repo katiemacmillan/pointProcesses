@@ -11,6 +11,8 @@ Date: Spring 2017
 
 --]]
 
+require "ip"
+local il = require "il"
 local color = require "il.color"
 -----------------
 -- IP routines --
@@ -31,6 +33,25 @@ local function negate( img )
   end
 
   return img
+end
+
+-- negate the intensities of an image
+local function negateInt( img )
+  local nrows, ncols = img.height, img.width
+  
+  -- convert from RGB to YIQ
+  img = il.RGB2YIQ( img )
+  
+  local res = img:clone()
+  
+  -- for each pixel
+  for r = 0, nrows-1 do
+    for c = 0, ncols-1 do
+      res:at(r,c).y = 255 - img:at(r,c).y
+    end
+  end
+  
+  return il.YIQ2RGB( res )
 end
 
 -----------------
@@ -150,5 +171,6 @@ return {
   brighten = brighten,
   darken = darken,
   grayscale = grayscale,
-  binary = binary
+  binary = binary,
+  negateInt = negateInt
 }

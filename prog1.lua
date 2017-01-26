@@ -29,7 +29,7 @@ local myPseudo = require "pseudoColor"
 
 imageMenu("Point processes",
   {
-    {"Negate", myip.negate},
+    {"Negate (RGB)", myip.negate},
     {"Brighten", myip.brighten},
     {"Darken", myip.darken},
     {"Grayscale", myip.grayscale},
@@ -37,6 +37,7 @@ imageMenu("Point processes",
       {{name = "binThresh", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
     {"Equalize", myHist.equalize},
     {"PseudoColor - 8", myPseudo.pseudoColor8},
+    {"Negate (intensity)", myip.negateInt},
   }
 )
 start()
