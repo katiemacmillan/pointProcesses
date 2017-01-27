@@ -19,6 +19,7 @@ require "visual"
 --local color = require "il.color"
 
 -- my routines
+local il = require "il"
 local myip = require "intensity"
 local myHist = require "hist"
 local myPseudo = require "pseudoColor"
@@ -29,6 +30,7 @@ local myPseudo = require "pseudoColor"
 
 imageMenu("Point processes",
   {
+    {"Lib- Negate", il.negate},
     {"Negate", myip.negate},
     {"Brighten", myip.brighten},
     {"Darken", myip.darken},
@@ -36,6 +38,9 @@ imageMenu("Point processes",
     {"Binary Threshold", myip.binary,
       {{name = "binThresh", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
     {"Equalize", myHist.equalize},
+    {"Contrast", myHist.contrastStretch,
+      {{name = "Min Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50},
+      {name = "Max Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50}}},
     {"PseudoColor - 8", myPseudo.pseudoColor8},
   }
 )

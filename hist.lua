@@ -33,7 +33,47 @@ local function equalizeLUT(alpha, hist)
     lut[i] = lut[i-1] + (alpha * hist[i])
   end
   return lut
+end
 
+-- Total equalization
+local function contrastLUT(hist, fudgeMin, fudgeMax)
+  local lut = {}
+  local iMax = 256
+  local iMin = 1
+  local sum = 0
+  
+  -- find true iMin (smalles intensity value)
+  while hist[iMin] == 0 do
+    lut[iMin] = 0     -- clip to 0
+    iMin = iMin + 1
+  end
+  -- ignore bottom fudge factor pixels to get adjusted iMin
+  while sum < fudgeMin do
+    sum = sum + hist[iMin]
+    lut[iMin] = 0     --clip to 0
+    iMin = iMin + 1
+  end
+  
+  sum = 0   -- reset sum
+    -- find true iMax (largest intensity value)
+  while hist[iMax] == 0 do
+    lut[iMax] = 255     -- clip to 255
+    iMax = iMax - 1
+  end
+  -- ignore top fudge factor pixels to get adjusted iMax
+  while sum < fudgeMax do
+    sum = sum + hist[iMax]
+    lut[iMax] = 255     -- clip to 255
+    iMax = iMax - 1
+  end  
+  
+  local deltaX = iMax-iMin  -- find deltaX
+  -- set all remaining intensities to fit between contrasts
+  for i =  iMin, iMax do
+    lut[i] = math.floor(((255/deltaX)*(i-iMin))+0.5)
+  end
+  
+  return lut
 end
 
 -- Total equalization
@@ -58,11 +98,39 @@ local function equalize (img)
   return color.YIQ2RGB( img )
 end
 
+
+-- Contrast Stretching
+local function contrastStretch (img, pMin, pMax)
+  -- convert image to YIQ color mode
+  img = color.RGB2YIQ( img )
+  local nrows, ncols = img.height, img.width
+  local pixels = nrows*ncols
+
+  -- calculate number of pixels to skip on each side
+  local topPercent = math.floor((pixels*pMin/100)+0.5)
+  local bottomPercent = math.floor((pixels*pMax/100)+0.5)
+  
+  local hist = getHistogram (img)
+  -- create look up table for each gray value
+  local lut = contrastLUT(hist, bottomPercent, topPercent)
+  
+  for r = 0, nrows - 1 do
+    for c = 0, ncols - 1 do
+      -- replace each pixel intensity with intensity from LUT
+      local i = img:at(r,c).y + 1
+      img:at(r,c).y = lut[i]
+    end
+  end
+  
+  return color.YIQ2RGB( img )
+end
+
     
 ------------------------------------
 -------- exported routines ---------
 ------------------------------------
 
 return {
-  equalize = equalize
+  equalize = equalize,
+  contrastStretch = contrastStretch
 }
