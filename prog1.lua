@@ -42,9 +42,11 @@ imageMenu("Point processes",
       {{name = "Min Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50},
       {name = "Max Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50}}},
     {"AutoContrast", myHist.contrastStretch},
-    {"PseudoColor - 8", myPseudo.pseudoColor8},
-  }
-)
+    {"PseudoColor", myPseudo.pseudoColor,
+      {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
+    {"PseudoColor - 8", myPseudo.pseudoColor},
+    {"PseudoColor - Continuous", myPseudo.continuousColor},
+  })
 
 imageMenu("Help",
   {
