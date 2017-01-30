@@ -19,11 +19,10 @@ local viz = require "visual"
 --local color = require "il.color"
 
 -- my routines
-local il = require "il"
 local myip = require "intensity"
 local myHist = require "hist"
 local myPseudo = require "pseudoColor"
-
+local histo = require "il.histo"
 -----------
 -- menus --
 -----------
@@ -31,6 +30,7 @@ local myPseudo = require "pseudoColor"
 imageMenu("Point processes",
   {
     {"Negate (RGB)", myip.negate},
+    {"Histogram Equalize YIQ", histo.equalizeYIQ},
     {"Negate (intensity)", myip.negateInt},
     {"Brighten", myip.brighten},
     {"Darken", myip.darken},
@@ -43,9 +43,12 @@ imageMenu("Point processes",
     {"Contrast", myHist.contrastStretch,
       {{name = "Min Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50},
       {name = "Max Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50}}},
-    {"PseudoColor - 8", myPseudo.pseudoColor8},
-  }
-)
+    {"AutoContrast", myHist.contrastStretch},
+    {"PseudoColor", myPseudo.pseudoColor,
+      {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
+    {"PseudoColor - 8", myPseudo.pseudoColor},
+    {"PseudoColor - Continuous", myPseudo.continuousColor},
+  })
 
 imageMenu("Help",
   {

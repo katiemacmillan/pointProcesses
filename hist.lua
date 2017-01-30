@@ -105,10 +105,19 @@ local function contrastStretch (img, pMin, pMax)
   img = color.RGB2YIQ( img )
   local nrows, ncols = img.height, img.width
   local pixels = nrows*ncols
-
+    
   -- calculate number of pixels to skip on each side
-  local topPercent = math.floor((pixels*pMin/100)+0.5)
-  local bottomPercent = math.floor((pixels*pMax/100)+0.5)
+  local topPercent = 0
+  local bottomPercent = 0
+  
+  -- check for user input ignore percentages
+  if pMin ~= nil then
+    bottomPercent = math.floor((pixels*pMax/100)+0.5)
+  end
+  if pMax ~= nil then
+    topPercent = math.floor((pixels*pMin/100)+0.5)
+  end
+
   
   local hist = getHistogram (img)
   -- create look up table for each gray value
