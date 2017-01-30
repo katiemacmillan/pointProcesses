@@ -45,8 +45,8 @@ local function negateInt( img )
   local res = img:clone()
   
   -- for each pixel
-  for r = 0, nrows-1 do
-    for c = 0, ncols-1 do
+  for r = 1, nrows-2 do
+    for c = 1, ncols-2 do
       res:at(r,c).y = 255 - img:at(r,c).y
     end
   end
@@ -134,7 +134,37 @@ local function grayscale( img )
   return img
 end
 
--- convert to binary image (doesn't work right)
+-- gamma transformation
+local function gamma( img, gamma )
+  local nrows, ncols = img.height, img.width
+  
+  -- convert from RGB to YIQ
+  img = il.RGB2YIQ(img)
+  
+  local res = img:clone()
+  local gam = gamma
+  
+  if gam <= 0 then
+    gam = 1.0
+  end
+  
+  -- for each pixel in the image
+  for r = 1, nrows-2 do
+    for c = 1, ncols-2 do
+      local orig = img:at(r,c).y/255
+      local i = 255 * math.pow( orig, gam )
+      
+      if i < 0 then i = 0 end
+      if i > 255 then i = 255 end
+      
+      res:at(r,c).y = i
+    end
+  end
+  
+  return il.YIQ2RGB( res )
+end
+
+-- convert to binary image
 local function binary( img, binThresh )
   local nrows, ncols = img.height, img.width
 
@@ -172,5 +202,6 @@ return {
   darken = darken,
   grayscale = grayscale,
   binary = binary,
-  negateInt = negateInt
+  negateInt = negateInt,
+  gamma = gamma
 }
