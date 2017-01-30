@@ -23,6 +23,7 @@ local myip = require "intensity"
 local myHist = require "hist"
 local myPseudo = require "pseudoColor"
 local histo = require "il.histo"
+local il = require "il"
 -----------
 -- menus --
 -----------
@@ -30,24 +31,34 @@ local histo = require "il.histo"
 imageMenu("Point processes",
   {
     {"Negate (RGB)", myip.negate},
-    {"Histogram Equalize YIQ", histo.equalizeYIQ},
     {"Negate (intensity)", myip.negateInt},
     {"Brighten", myip.brighten},
     {"Darken", myip.darken},
     {"Grayscale", myip.grayscale},
     {"Gamma", myip.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
-    {"Weiss Gamma", il.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
     {"Binary Threshold", myip.binary,
       {{name = "binThresh", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
-    {"Equalize", myHist.equalize},
-    {"Contrast", myHist.contrastStretch,
+    {"Equalize - Specify", myHist.equalize,
       {{name = "Min Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50},
       {name = "Max Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50}}},
-    {"AutoContrast", myHist.contrastStretch},
+    {"Equalize - Auto", myHist.equalize},
+    {"Contrast Stretch - Specify", myHist.contrastStretch,
+      {{name = "Min Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50},
+      {name = "Max Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50}}},
+    {"Contrast Stretch - Auto", myHist.contrastStretch},
     {"PseudoColor", myPseudo.pseudoColor,
       {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
     {"PseudoColor - 8", myPseudo.pseudoColor},
     {"PseudoColor - Continuous", myPseudo.continuousColor},
+  })
+imageMenu("Weiss processes",
+  {
+    {"Histogram Equalize YIQ", histo.equalizeYIQ},
+    {"Contrast Stretch", histo.stretch},
+    {"Contrast Specify", histo.stretchSpecify, hotkey = "C-H",
+      {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
+       {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
+    {"Weiss Gamma", il.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
   })
 
 imageMenu("Help",
