@@ -1,6 +1,9 @@
 
 local color = require "il.color"
-
+-------------------------------------------------
+-- Find the index to the minimum intensity
+-- after ignoring a percentage threshold
+-------------------------------------------------
 local function getIndexMin(hist, pMin)
   local iMin = 1
   local sum = 0
@@ -16,6 +19,10 @@ local function getIndexMin(hist, pMin)
   end
     return iMin
 end
+-------------------------------------------------
+-- Find the index to the maximum intensity
+-- after ignoring a percentage threshold
+-------------------------------------------------
 local function getIndexMax(hist, pMax)
   local iMax = 256
   local sum = 0

@@ -259,11 +259,17 @@ local colorMap = {
   {255, 238, 255},
   {255, 245, 255},
 }
-local function psudoColorLevels(levels)
+local function pseudoColorLevels(levels, specify)
   local lut = {}
-
   local zones = math.floor((256/levels) + 0.5)
   local cm = 1
+ 
+ if specify then
+    math.randomseed(os.time())
+    local rand = math.random()*1000
+    cm = (math.floor(rand+0.5))%256
+  end
+  
   local i = 1
   while i < 257 do
     local j = 0
@@ -272,7 +278,7 @@ local function psudoColorLevels(levels)
       j = j + 1
       i = i+1
     end
-    cm = cm + zones
+    cm = (cm + zones)%256
   end
   
   return lut
@@ -280,11 +286,14 @@ end
 
 -- create & return a histogram of an image
 local function pseudoColor( img, levels )
-  if levels == nil then levels = 8 end
-  print(levels)
+  local specify = true
+  if levels == nil then 
+    levels = 8
+    specify = false
+  end
   -- get number of rows and columns in image
   local nrows, ncols = img.height, img.width
-  local LUT = psudoColorLevels(levels)
+  local LUT = pseudoColorLevels(levels, specify)
   local temp = img:clone()
   temp = color.RGB2YIQ(temp)
   -- for each pixel in the image
