@@ -50,6 +50,8 @@ imageMenu("Point processes",
       {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
     {"PseudoColor - 8", myPseudo.pseudoColor},
     {"PseudoColor - Continuous", myPseudo.continuousColor},
+    {"Posterize", myip.posterize,
+      {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
   })
 imageMenu("Weiss processes",
   {
@@ -59,6 +61,8 @@ imageMenu("Weiss processes",
       {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
        {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
     {"Weiss Gamma", il.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
+    {"Weiss Posterize", il.posterize,
+      {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
   })
 
 imageMenu("Help",

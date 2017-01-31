@@ -164,6 +164,25 @@ local function gamma( img, gamma )
   return il.YIQ2RGB( res )
 end
 
+-- posterize image
+local function posterize( img, levels )
+  local nrows, ncols = img.height, img.width
+  
+  -- convert from RGB to YIQ
+  img = il.RGB2YIQ(img)
+  
+  local res = img:clone()
+  
+  for r = 1, nrows-2 do
+    for c = 1, ncols-2 do
+      -- only allow as many intensity levels as given
+      -- create lut for intensities
+    end
+  end
+  
+  return il.YIQ2RGB( res )
+end
+
 -- convert to binary image
 local function binary( img, binThresh )
   local nrows, ncols = img.height, img.width
@@ -203,5 +222,6 @@ return {
   grayscale = grayscale,
   binary = binary,
   negateInt = negateInt,
-  gamma = gamma
+  gamma = gamma,
+  posterize = posterize
 }
