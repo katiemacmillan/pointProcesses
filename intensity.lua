@@ -164,19 +164,33 @@ local function gamma( img, gamma )
   return il.YIQ2RGB( res )
 end
 
+local function posterizeLUT( levels )
+  local lut = {}
+  local intens = 256 / levels
+  
+  -- initialize to 0
+  for i = 0, 256 do
+    lut[i] = 0
+  end
+  
+  return lut
+end
+
 -- posterize image
 local function posterize( img, levels )
   local nrows, ncols = img.height, img.width
-  
   -- convert from RGB to YIQ
   img = il.RGB2YIQ(img)
   
   local res = img:clone()
   
+  -- only allow as many intensity levels as given
+  -- create lut for intensities
+  local lut = posterizeLUT(levels)
+  
   for r = 1, nrows-2 do
     for c = 1, ncols-2 do
-      -- only allow as many intensity levels as given
-      -- create lut for intensities
+      -- look up intensity in lut
     end
   end
   
@@ -209,7 +223,6 @@ local function binary( img, binThresh )
   
   return img
 end
-
 
 ------------------------------------
 -------- exported routines ---------
