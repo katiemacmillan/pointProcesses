@@ -42,6 +42,11 @@ imageMenu("Point Processes",
     {"Gamma (YIQ)", myip.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
     {"Binary Threshold", myip.binary,
       {{name = "binThresh", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
+    {"Bit Plane Slicing", myip.bitPlane,
+      {{name = "bit", type = "number", displaytype = "slider", default = 0, min = 0, max = 7}}},
+    })
+  imageMenu("Color LUTs", 
+    {
     {"PseudoColor - Specify", myPseudo.pseudoColor,
       {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
     {"PseudoColor - 8", myPseudo.pseudoColor},

@@ -236,8 +236,8 @@ local function binary( img, binThresh )
   local nrows, ncols = img.height, img.width
 
   -- for each pixel in the image
-  for r = 1, nrows-2 do
-    for c = 1, ncols-2 do        
+  for r = 0, nrows-1 do
+    for c = 0, ncols-1 do        
       -- use red intensity as 30%, green as %59 and blue as %11 to get grayscale intensity
       i = (img:at(r,c).rgb[0]*0.3)
       i = i + (img:at(r,c).rgb[1]*0.59)
@@ -251,6 +251,41 @@ local function binary( img, binThresh )
         img:at(r,c).rgb[0] = 255
         img:at(r,c).rgb[1] = 255
         img:at(r,c).rgb[2] = 255
+      end
+    end
+  end
+  
+  return img
+end
+
+local function toBin(num)
+  local binary={}
+  while num>0 do
+    remainder = num%2
+    table.insert(binary,1,remainder)
+    num=(num-remainder)/2
+  end 
+  while table.getn(binary) < 8 do
+    table.insert(binary, 1, 0)
+  end
+  
+  return binary
+end
+local function bitPlane(img, plane)
+  local nrows, ncols = img.height, img.width
+  local temp = color.RGB2YIQ(img)
+  -- for each pixel in the image
+  for r = 0, nrows-1 do
+    for c = 0, ncols-1 do        
+      local bin = toBin(temp:at(r,c).y)
+      if bin[plane+1] == 1 then 
+        for ch = 0, 2 do
+          temp:at(r,c).rgb[ch] = 255
+        end
+      else
+        for ch = 0, 2 do
+          temp:at(r,c).rgb[ch] = 0
+        end
       end
     end
   end
@@ -272,5 +307,6 @@ return {
   grayscale = grayscale,
   binary = binary,
   gamma = gamma,
-  posterize = posterize
+  posterize = posterize,
+  bitPlane = bitPlane,
 }
