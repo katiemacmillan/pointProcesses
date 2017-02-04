@@ -27,7 +27,7 @@ local il = require "il"
 -- menus --
 -----------
 
-imageMenu("Point processes",
+imageMenu("Point Processes",
   {
     {"Negate (RGB)", myip.negateRGB},
     {"Negate (YIQ)", myip.negateYIQ},
@@ -76,7 +76,7 @@ imageMenu("Weiss Processes",
 
 imageMenu("Help",
   {
-    { "Help", viz.imageMessage( "Help", "Abandon all hope, ye who enter here..." ) },
+    { "Help", viz.imageMessage( "Help", "Under the File menu a user can open a new image, save the current image or exit the program.\n\nBy right clicking on the image tab, the user can duplicate or reload the image.\n\nThe Point Processes menu item hold all the different point processes you can use on your image. They also indicate what color model is used in the calculations.\n\nFinally, the Histogram Processes menu has the display histogram as well as the processes that are calculated using the histogram of the image." ) },
     { "About", viz.imageMessage( "Lua Image Point Processing" .. viz.VERSION, "Authors: Katie MacMillan and Forrest Miller\nClass: CSC442 Digital Image Processing\nDate: February 9th, 2017" ) },
   }
 )
