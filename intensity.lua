@@ -19,7 +19,7 @@ local color = require "il.color"
 -----------------
 
 -- negate/invert image
-local function negate( img )
+local function negateRGB( img )
   local nrows, ncols = img.height, img.width
 
   -- for each pixel in the image
@@ -36,7 +36,7 @@ local function negate( img )
 end
 
 -- negate the intensities of an image
-local function negateInt( img )
+local function negateYIQ( img )
   local nrows, ncols = img.height, img.width
   
   -- convert from RGB to YIQ
@@ -53,10 +53,27 @@ local function negateInt( img )
   
   return il.YIQ2RGB( res )
 end
-
+-- negate the intensities of an image
+local function negateIHS( img )
+  local nrows, ncols = img.height, img.width
+  
+  -- convert from RGB to YIQ
+  img = il.RGB2IHS( img )
+  
+  local res = img:clone()
+  
+  -- for each pixel
+  for r = 1, nrows-2 do
+    for c = 1, ncols-2 do
+      res:at(r,c).r = 255 - img:at(r,c).r
+    end
+  end
+  
+  return il.IHS2RGB( res )
+end
 -----------------
 -- brighten image by 10(default)
-local function brighten( img )
+local function brightenRGB( img, offset )
   local nrows, ncols = img.height, img.width
 
   -- for each pixel in the image
@@ -64,10 +81,10 @@ local function brighten( img )
     for c = 1, ncols-2 do
       -- increase each RGB channel by 10
       for ch = 0, 2 do
-        local i = img:at(r,c).rgb[ch] + 10
+        local i = img:at(r,c).rgb[ch] + offset
         -- clip max at 255
-        if i > 255 
-        then img:at(r,c).rgb[ch] = 255
+        if i > 255 then img:at(r,c).rgb[ch] = 255
+        elseif i < 0 then img:at(r,c).rgb[ch] = 0
         else img:at(r,c).rgb[ch] = i
         end
       end
@@ -77,29 +94,46 @@ local function brighten( img )
   return img
 end
 
--- darken image by 10 (default)
-local function darken( img )
+local function brightenYIQ( img, offset )
   local nrows, ncols = img.height, img.width
-
+  img = il.RGB2YIQ( img )
   -- for each pixel in the image
   for r = 1, nrows-2 do
     for c = 1, ncols-2 do
-      -- darken each RGB channel by 10
-      for ch = 0, 2 do
-        local i = img:at(r,c).rgb[ch] - 10
-        -- clip min at 0
-        if i < 0 
-        then img:at(r,c).rgb[ch] = 0
-        else img:at(r,c).rgb[ch] = i
-        end
+      -- increase each RGB channel by 10
+      local i = img:at(r,c).y + offset
+      -- clip max at 255
+      if i > 255 then img:at(r,c).y = 255
+      elseif i < 0 then img:at(r,c).y = 0
+      else img:at(r,c).y = i
       end
     end
   end
 
-  return img
+  return   il.YIQ2RGB( img )
 end
 
+local function brightenIHS( img, offset )
+  local nrows, ncols = img.height, img.width
+  img = il.RGB2IHS( img )
+  -- for each pixel in the image
+  for r = 1, nrows-2 do
+    for c = 1, ncols-2 do
+      -- increase each RGB channel by 10
+      local i = img:at(r,c).r + offset
+      -- clip max at 255
+      if i > 255 then 
+        img:at(r,c).r = 255
+      elseif i < 0 then 
+        img:at(r,c).r = 0
+      else 
+        img:at(r,c).r = i
+      end
+    end
+  end
 
+  return   il.IHS2RGB( img )
+end
 -- convert image to graysale
 local function grayscale( img )
   local nrows, ncols = img.height, img.width
@@ -229,12 +263,14 @@ end
 ------------------------------------
 
 return {
-  negate = negate,
-  brighten = brighten,
-  darken = darken,
+  negateRGB = negateRGB,
+  negateYIQ = negateYIQ,
+  negateIHS = negateIHS,
+  brightenRGB = brightenRGB,
+  brightenYIQ = brightenYIQ,
+  brightenIHS = brightenIHS,
   grayscale = grayscale,
   binary = binary,
-  negateInt = negateInt,
   gamma = gamma,
   posterize = posterize
 }
