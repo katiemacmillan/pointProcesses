@@ -12,7 +12,6 @@ Date: Spring 2017
 --]]
 
 -- LuaIP image processing routines
-
 require "ip"
 local viz = require "visual"
 
@@ -43,6 +42,15 @@ imageMenu("Point processes",
     {"Gamma (YIQ)", myip.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
     {"Binary Threshold", myip.binary,
       {{name = "binThresh", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
+    {"PseudoColor - Specify", myPseudo.pseudoColor,
+      {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
+    {"PseudoColor - 8", myPseudo.pseudoColor},
+    {"PseudoColor - Continuous", myPseudo.continuousColor},
+    {"Posterize", myip.posterize,
+      {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
+  })
+imageMenu("Histogram Processes",
+  {
     {"Equalize - Specify", myHist.equalize,
       {{name = "Min Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50},
       {name = "Max Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50}}},
@@ -51,14 +59,10 @@ imageMenu("Point processes",
       {{name = "Min Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50},
       {name = "Max Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50}}},
     {"Contrast Stretch - Auto", myHist.contrastStretch},
-    {"PseudoColor - Specify", myPseudo.pseudoColor,
-      {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
-    {"PseudoColor - 8", myPseudo.pseudoColor},
-    {"PseudoColor - Continuous", myPseudo.continuousColor},
-    {"Posterize", myip.posterize,
-      {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
+    {"Display Histogram", il.showHistogram,
+      {{name = "Color Mode", type = "string", default = "rgb"}}},
   })
-imageMenu("Weiss processes",
+imageMenu("Weiss Processes",
   {
     {"IHStogram Equalize YIQ", histo.equalizeYIQ},
     {"Contrast Stretch", histo.stretch},
