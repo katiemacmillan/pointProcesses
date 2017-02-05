@@ -200,13 +200,17 @@ end
 
 local function posterizeLUT( levels )
   local lut = {}
-  local intens = 256 / levels
   
   -- initialize to 0
   for i = 0, 256 do
     lut[i] = 0
   end
   
+  -- stair step
+  for i = 0, 256 do
+    lut[i] = 255 / (levels - 1) * math.floor(i * levels / 256)
+  end
+    
   return lut
 end
 
@@ -218,13 +222,14 @@ local function posterize( img, levels )
   
   local res = img:clone()
   
-  -- only allow as many intensity levels as given
   -- create lut for intensities
   local lut = posterizeLUT(levels)
   
   for r = 1, nrows-2 do
     for c = 1, ncols-2 do
       -- look up intensity in lut
+      i = img:at(r,c).y
+      res:at(r,c).y = lut[i]
     end
   end
   
