@@ -1,7 +1,6 @@
 --[[
   * * * * prog1.lua * * * *
-
-Lua image processing program #1: This program does a multitude of point processes to a given image. Additionally, there are a handful of histogram operations that can be done. All operations can be accessed by the menus at the top of the screen. Most processes say which color model the calculations are done with.
+Digital Image Process Program #1: This program does a multitude of point processes to a given image. Additionally, there are a handful of histogram operations that can be done. All operations can be accessed by the menus at the top of the screen. Most processes say which color model the calculations are done with.
 
 Author: Katie MacMillan and Forrest Miller
 Class: CSC442/542 Digital Image Processing
@@ -11,17 +10,18 @@ Date: 2/9/2017
 -- LuaIP image processing routines
 require "ip"
 local viz = require "visual"
+local histo = require "il.histo"
+local il = require "il"
 
 -- our lua routines
 local myip = require "intensity"
 local myHist = require "hist"
 local myPseudo = require "pseudoColor"
-local histo = require "il.histo"
-local il = require "il"
 
 -----------
 -- menus --
 -----------
+-- point processes menu
 imageMenu("Point Processes",
   {
     {"Negate (RGB)", myip.negateRGB},
@@ -41,6 +41,7 @@ imageMenu("Point Processes",
       {{name = "bit", type = "number", displaytype = "slider", default = 0, min = 0, max = 7}}},
     })
   
+  -- color processes
   imageMenu("Color LUTs", 
     {
       {"PseudoColor - Specify", myPseudo.pseudoColor,
@@ -51,6 +52,7 @@ imageMenu("Point Processes",
         {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
   })
 
+-- histogram processes
 imageMenu("Histogram Processes",
   {
     {"Display Histogram", il.showHistogram,
@@ -66,24 +68,12 @@ imageMenu("Histogram Processes",
     {"Logarithmic Compression", myPseudo.logCompression},
   })
 
-imageMenu("Weiss Processes",
-  {
-    {"IHStogram Equalize YIQ", histo.equalizeYIQ},
-    {"Contrast Stretch", histo.stretch},
-    {"Contrast Specify", histo.stretchSpecify, hotkey = "C-H",
-      {{name = "lp", type = "number", displaytype = "spin", default = 1, min = 0, max = 100},
-       {name = "rp", type = "number", displaytype = "spin", default = 99, min = 0, max = 100}}},
-    {"Weiss Gamma (RGB)", il.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
-    {"Weiss Posterize", il.posterize,
-      {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
-    {"Logscale", il.logscale,
-      {{name = "Color Mode", type = "string", default = "rgb"}}},
-  })
-
+-- help menu
 imageMenu("Help",
   {
     {"Help", viz.imageMessage("Help", "Under the File menu a user can open a new image, save the current image or exit the program.\n\nBy right clicking on the image tab, the user can duplicate or reload the image.\n\nThe Point Processes menu item hold all the different point processes you can use on your image. They also indicate what color model is used in the calculations.\n\nFinally, the Histogram Processes menu has the display histogram as well as the processes that are calculated using the histogram of the image.")},
     {"About", viz.imageMessage("Lua Image Point Processing" .. viz.VERSION, "Authors: Katie MacMillan and Forrest Miller\nClass: CSC442 Digital Image Processing\nDate: February 9th, 2017")},
   }
 )
+
 start()
