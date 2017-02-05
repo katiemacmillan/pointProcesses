@@ -34,6 +34,20 @@ local function imgFromRGB( img, mode )
   end
   return img
 end
+local function toBin(num)
+  local binary={}
+  while num>0 do
+    remainder = num%2
+    table.insert(binary,1,remainder)
+    num=(num-remainder)/2
+  end 
+  while table.getn(binary) < 8 do
+    table.insert(binary, 1, 0)
+  end
+  
+  return binary
+end
+
 -- negate/invert image
 local function negate( img, mode )
   img = imgFromRGB(img, mode)
@@ -168,37 +182,20 @@ local function binary( img, binThresh )
   return img
 end
 
-local function toBin(num)
-  local binary={}
-  while num>0 do
-    remainder = num%2
-    table.insert(binary,1,remainder)
-    num=(num-remainder)/2
-  end 
-  while table.getn(binary) < 8 do
-    table.insert(binary, 1, 0)
-  end
-  
-  return binary
-end
 local function bitPlane(img, plane)
   local nrows, ncols = img.height, img.width
-  local temp = color.RGB2YIQ(img)
-  -- for each pixel in the image
-  for r = 0, nrows-1 do
-    for c = 0, ncols-1 do        
-      local bin = toBin(temp:at(r,c).y)
-      if bin[plane+1] == 1 then 
-        for ch = 0, 2 do
-          temp:at(r,c).rgb[ch] = 255
-        end
-      else
-        for ch = 0, 2 do
-          temp:at(r,c).rgb[ch] = 0
-        end
+   img = img:mapPixels(
+    function( r, g, b )
+      local intensity = (r*0.3) + (g*0.59) + (b*0.11)
+      local i = 0
+      local bin = toBin(intensity)
+      if bin[plane+1] == 1 then i = 255
+      else i = 0 
       end
+      
+      return i, i, i
     end
-  end
+  )
   
   return img
 end
