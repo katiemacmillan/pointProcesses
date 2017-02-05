@@ -259,7 +259,7 @@ local colorMap = {
   {255, 238, 255},
   {255, 245, 255},
 }
-local function pseudoColorLevels(levels, specify)
+local function pseudoColorLUT(levels, specify)
   local lut = {}
   local zones = math.floor((256/levels) + 0.5)
   local cm = 1
@@ -284,6 +284,19 @@ local function pseudoColorLevels(levels, specify)
   return lut
 end
 
+local function logarithmicLUT()
+  local lut = {}
+  local c = (255/(math.log(255)))
+  print(c)
+  for i = 1, 256 do
+    lut[i] = math.floor((c*(math.log(i)))+0.5)
+    if lut[i] > 255 then lut[i] = 255 end
+    print(lut[i])
+  end
+  
+  
+  return lut
+end
 -- create & return a histogram of an image
 local function pseudoColor( img, levels )
   local specify = true
@@ -293,7 +306,7 @@ local function pseudoColor( img, levels )
   end
   -- get number of rows and columns in image
   local nrows, ncols = img.height, img.width
-  local LUT = pseudoColorLevels(levels, specify)
+  local LUT = pseudoColorLUT(levels, specify)
   local temp = img:clone()
   temp = color.RGB2YIQ(temp)
   -- for each pixel in the image
@@ -311,7 +324,7 @@ end
 
 
 -- create & return a histogram of an image
-local function continuousColor( img)  
+local function continuousColor(img)  
   -- get number of rows and columns in image
   local nrows, ncols = img.height, img.width
   local temp = img:clone()
@@ -330,11 +343,30 @@ local function continuousColor( img)
 end
 
 
+
+local function logCompression(img)
+  local nrows, ncols = img.height, img.width
+  local temp = img:clone()
+  local LUT = logarithmicLUT()
+  temp = color.RGB2YIQ(temp)
+  -- for each pixel in the image
+  for r = 0, nrows-1 do
+    for c = 0, ncols-1 do
+      local i = temp:at(r,c).y
+        temp:at(r,c).y = LUT[i+1]
+       -- print(temp:at(r,c).y)
+    end
+  end  
+  -- return the histogram array
+  return color.YIQ2RGB(temp)
+end
+
 ------------------------------------
 -------- exported routines ---------
 ------------------------------------
 
 return {
   pseudoColor = pseudoColor,
-  continuousColor = continuousColor
+  continuousColor = continuousColor,
+  logCompression = logCompression
 }

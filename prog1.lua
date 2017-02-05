@@ -42,6 +42,11 @@ imageMenu("Point Processes",
     {"Gamma (YIQ)", myip.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
     {"Binary Threshold", myip.binary,
       {{name = "binThresh", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
+    {"Bit Plane Slicing", myip.bitPlane,
+      {{name = "bit", type = "number", displaytype = "slider", default = 0, min = 0, max = 7}}},
+    })
+  imageMenu("Color LUTs", 
+    {
     {"PseudoColor - Specify", myPseudo.pseudoColor,
       {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
     {"PseudoColor - 8", myPseudo.pseudoColor},
@@ -51,6 +56,8 @@ imageMenu("Point Processes",
   })
 imageMenu("Histogram Processes",
   {
+    {"Display Histogram", il.showHistogram,
+      {{name = "Color Mode", type = "string", default = "rgb"}}},
     {"Equalize - Specify", myHist.equalize,
       {{name = "Min Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50},
       {name = "Max Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50}}},
@@ -59,8 +66,7 @@ imageMenu("Histogram Processes",
       {{name = "Min Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50},
       {name = "Max Percent", type = "number", displaytype = "slider", default = 1, min = 0, max = 50}}},
     {"Contrast Stretch - Auto", myHist.contrastStretch},
-    {"Display Histogram", il.showHistogram,
-      {{name = "Color Mode", type = "string", default = "rgb"}}},
+    {"Logarithmic Compression", myPseudo.logCompression},
   })
 imageMenu("Weiss Processes",
   {
@@ -72,6 +78,8 @@ imageMenu("Weiss Processes",
     {"Weiss Gamma (RGB)", il.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
     {"Weiss Posterize", il.posterize,
       {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
+    {"Logscale", il.logscale,
+      {{name = "Color Mode", type = "string", default = "rgb"}}},
   })
 
 imageMenu("Help",
