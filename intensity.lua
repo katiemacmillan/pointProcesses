@@ -76,35 +76,12 @@ end
 
 -- convert image to graysale
 local function grayscale( img )
-  local nrows, ncols = img.height, img.width
-
-  -- for each pixel in the image
-  for r = 1, nrows-2 do
-    for c = 1, ncols-2 do
-      -- negate each RGB channel
-      local i = 0
-      -- use red intensity as 30%, green as %59 and blue as %11
-      i = (img:at(r,c).rgb[0]*0.3)
-      i = i + (img:at(r,c).rgb[1]*0.59)
-      i = i + (img:at(r,c).rgb[2]*0.11)
-      -- clip min at 0
-      if i < 0 
-      then img:at(r,c).rgb[0] = 0
-        img:at(r,c).rgb[1] = 0
-        img:at(r,c).rgb[2] = 0
-        -- clip max at 255
-      elseif i > 255
-      then img:at(r,c).rgb[0] = 255
-        img:at(r,c).rgb[1] = 255
-        img:at(r,c).rgb[2] = 255
-        -- set intensity for each to i
-      else img:at(r,c).rgb[0] = i
-        img:at(r,c).rgb[1] = i
-        img:at(r,c).rgb[2] = i
-      end
+  img = img:mapPixels(
+    function( r, g, b )
+      local i = (r*0.3) + (g*0.59) + (b*0.11)
+      return i, i, i
     end
-  end
-
+  )
   return img
 end
 
