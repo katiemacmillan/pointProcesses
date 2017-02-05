@@ -155,27 +155,15 @@ end
 
 -- convert to binary image
 local function binary( img, binThresh )
-  local nrows, ncols = img.height, img.width
-
-  -- for each pixel in the image
-  for r = 0, nrows-1 do
-    for c = 0, ncols-1 do        
-      -- use red intensity as 30%, green as %59 and blue as %11 to get grayscale intensity
-      i = (img:at(r,c).rgb[0]*0.3)
-      i = i + (img:at(r,c).rgb[1]*0.59)
-      i = i + (img:at(r,c).rgb[2]*0.11)
-
-      if i < binThresh then 
-        img:at(r,c).rgb[0] = 0
-        img:at(r,c).rgb[1] = 0
-        img:at(r,c).rgb[2] = 0
-      else 
-        img:at(r,c).rgb[0] = 255
-        img:at(r,c).rgb[1] = 255
-        img:at(r,c).rgb[2] = 255
-      end
+   img = img:mapPixels(
+    function( r, g, b )
+      local i = (r*0.3) + (g*0.59) + (b*0.11)
+      if i < binThresh then i = 0
+      else i = 255 end
+      
+      return i, i, i
     end
-  end
+  )
   
   return img
 end
