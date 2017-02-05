@@ -287,11 +287,9 @@ end
 local function logarithmicLUT()
   local lut = {}
   local c = (255/(math.log(255)))
-  print(c)
   for i = 1, 256 do
     lut[i] = math.floor((c*(math.log(i)))+0.5)
     if lut[i] > 255 then lut[i] = 255 end
-    print(lut[i])
   end
   
   
@@ -305,19 +303,14 @@ local function pseudoColor( img, levels )
     specify = false
   end
   -- get number of rows and columns in image
-  local nrows, ncols = img.height, img.width
   local LUT = pseudoColorLUT(levels, specify)
-  local temp = img:clone()
-  temp = color.RGB2YIQ(temp)
   -- for each pixel in the image
-  for r = 0, nrows-1 do
-    for c = 0, ncols-1 do
-      local i = img:at(r,c).y
-      for ch = 0, 2 do
-        img:at(r,c).rgb[ch] = LUT[i+1][ch + 1]
-        end      
+  img = img:mapPixels(
+    function( r, g, b )
+      local i = math.floor((r*0.3) + (g*0.59) + (b*0.11)+0.5) + 1
+      return LUT[i][1], LUT[i][2], LUT[i][3]
     end
-  end  
+  )
   -- return the histogram array
   return img
 end
@@ -325,19 +318,13 @@ end
 
 -- create & return a histogram of an image
 local function continuousColor(img)  
-  -- get number of rows and columns in image
-  local nrows, ncols = img.height, img.width
-  local temp = img:clone()
-  temp = color.RGB2YIQ(temp)
   -- for each pixel in the image
-  for r = 0, nrows-1 do
-    for c = 0, ncols-1 do
-      local i = img:at(r,c).y
-      for ch = 0, 2 do
-        img:at(r,c).rgb[ch] = colorMap[i+1][ch + 1]
-        end      
+  img = img:mapPixels(
+    function( r, g, b )
+      local i = math.floor((r*0.3) + (g*0.59) + (b*0.11)+0.5) + 1
+      return colorMap[i][1], colorMap[i][2], colorMap[i][3]
     end
-  end  
+  )
   -- return the histogram array
   return img
 end
@@ -345,20 +332,16 @@ end
 
 
 local function logCompression(img)
-  local nrows, ncols = img.height, img.width
-  local temp = img:clone()
   local LUT = logarithmicLUT()
-  temp = color.RGB2YIQ(temp)
+  img = color.RGB2YIQ(img)
   -- for each pixel in the image
-  for r = 0, nrows-1 do
-    for c = 0, ncols-1 do
-      local i = temp:at(r,c).y
-        temp:at(r,c).y = LUT[i+1]
-       -- print(temp:at(r,c).y)
+  img = img:mapPixels(
+    function( r, g, b )
+      return LUT[r+1], g, b
     end
-  end  
+  )
   -- return the histogram array
-  return color.YIQ2RGB(temp)
+  return color.YIQ2RGB(img)
 end
 
 ------------------------------------

@@ -134,13 +134,13 @@ local function equalize (img, pMin, pMax)
   -- create look up table for each gray value
   local lut = equalizeLUT(alpha, hist, bottomPercent, topPercent)
   
-  for r = 0, nrows - 1 do
-    for c = 0, ncols - 1 do
-      -- replace each pixel intensity with intensity from LUT
-      i = img:at(r,c).y + 1
-      img:at(r,c).y = lut[i]
+  img = img:mapPixels(
+    function( r, g, b )
+      r = lut[r+1]      
+      return r, g, b
     end
-  end
+  )
+  
   return color.YIQ2RGB( img )
 end
 
@@ -149,8 +149,7 @@ end
 local function contrastStretch (img, pMin, pMax)
   -- convert image to YIQ color mode
   img = color.RGB2YIQ( img )
-  local nrows, ncols = img.height, img.width
-  local pixels = nrows*ncols
+  local pixels = img.height * img.width
     
   -- calculate number of pixels to skip on each side
   local topPercent = 0
@@ -169,13 +168,12 @@ local function contrastStretch (img, pMin, pMax)
   -- create look up table for each gray value
   local lut = contrastLUT(hist, bottomPercent, topPercent)
   
-  for r = 0, nrows - 1 do
-    for c = 0, ncols - 1 do
-      -- replace each pixel intensity with intensity from LUT
-      local i = img:at(r,c).y + 1
-      img:at(r,c).y = lut[i]
+  img = img:mapPixels(
+    function( r, g, b )
+      r = lut[r+1]      
+      return r, g, b
     end
-  end
+  )
   
   return color.YIQ2RGB( img )
 end
