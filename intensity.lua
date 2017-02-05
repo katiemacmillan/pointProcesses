@@ -17,68 +17,43 @@ local color = require "il.color"
 -----------------
 -- IP routines --
 -----------------
-
--- negate/invert image
-local function negateRGB( img )
-  local nrows, ncols = img.height, img.width
-
-  -- for each pixel in the image
-  for r = 1, nrows-2 do
-    for c = 1, ncols-2 do
-      -- negate each RGB channel
-      for ch = 0, 2 do
-        img:at(r,c).rgb[ch] = 255 - img:at(r,c).rgb[ch]
-      end
-    end
+local function imgToRGB( img, mode )
+  if mode == "yiq" then
+    img = il.YIQ2RGB( img )
+  elseif mode == "ihs" then
+    img = il.IHS2RGB( img )
   end
-
   return img
 end
 
--- negate the intensities of an image
-local function negateYIQ( img )
-  local nrows, ncols = img.height, img.width
-  
-  -- convert from RGB to YIQ
-  img = il.RGB2YIQ( img )
-  
-  local res = img:clone()
-  
-  -- for each pixel
-  for r = 1, nrows-2 do
-    for c = 1, ncols-2 do
-      res:at(r,c).y = 255 - img:at(r,c).y
-    end
-  end
-  
-  return il.YIQ2RGB( res )
-end
--- negate the intensities of an image
-local function negateIHS( img )
-  local nrows, ncols = img.height, img.width
-  
-  -- convert from RGB to YIQ
-  img = il.RGB2IHS( img )
-  
-  local res = img:clone()
-  
-  -- for each pixel
-  for r = 1, nrows-2 do
-    for c = 1, ncols-2 do
-      res:at(r,c).r = 255 - img:at(r,c).r
-    end
-  end
-  
-  return il.IHS2RGB( res )
-end
------------------
-
-local function brighten( img, offset, mode )
+local function imgFromRGB( img, mode )
   if mode == "yiq" then
     img = il.RGB2YIQ( img )
   elseif mode == "ihs" then
     img = il.RGB2IHS( img )
   end
+  return img
+end
+-- negate/invert image
+local function negate( img, mode )
+  img = imgFromRGB(img, mode)
+  img = img:mapPixels(
+    function( r, g, b )
+      r = 255 - r
+      if mode == "rgb" then
+        g = 255 - g
+        b = 255 - b
+      end
+      
+      return r, g, b
+    end
+  )
+  
+  return imgToRGB(img, mode)
+end
+
+local function brighten( img, offset, mode )
+  img = imgFromRGB(img, mode)
   img = img:mapPixels(
     function( r, g, b )
       r = r + offset
@@ -96,12 +71,7 @@ local function brighten( img, offset, mode )
       return r, g, b
     end
   )
-  if mode == "yiq" then
-    img = il.YIQ2RGB( img )
-  elseif mode == "ihs" then
-    img = il.IHS2RGB( img )
-  end
-  return   img
+   return   imgToRGB(img, mode)
 end
 
 -- convert image to graysale
@@ -273,12 +243,8 @@ end
 ------------------------------------
 
 return {
-  negateRGB = negateRGB,
-  negateYIQ = negateYIQ,
-  negateIHS = negateIHS,
-  brightenRGB = brightenRGB,
+  negate = negate,
   brighten = brighten,
-  brightenIHS = brightenIHS,
   grayscale = grayscale,
   binary = binary,
   gamma = gamma,

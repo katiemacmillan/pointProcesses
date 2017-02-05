@@ -24,9 +24,8 @@ local myPseudo = require "pseudoColor"
 -- point processes menu
 imageMenu("Point Processes",
   {
-    {"Negate (RGB)", myip.negateRGB},
-    {"Negate (YIQ)", myip.negateYIQ},
-    {"Negate (IHS)", myip.negateIHS},
+    {"Negate (RGB)", myip.negate,
+      {{name = "Color Mode", type = "string", default = "rgb"}}},
     {"Brighten/Darken", myip.brighten,
       {{name = "offset", type = "number", displaytype = "slider", default = 0, min = -255, max = 255},
         {name = "Color Mode", type = "string", default = "rgb"}}},
