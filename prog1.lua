@@ -1,43 +1,38 @@
 --[[
+  * * * * prog1.lua * * * *
 
-  * * * * example2.lua * * * *
+Lua image processing program #1: This program does a multitude of point processes to a given image. Additionally, there are a handful of histogram operations that can be done. All operations can be accessed by the menus at the top of the screen. Most processes say which color model the calculations are done with.
 
-Lua image processing program: performs image negation and smoothing.
-Menu routines are in example2.lua, IP routines are negate_smooth.lua.
-
-Author: John Weiss, Ph.D.
+Author: Katie MacMillan and Forrest Miller
 Class: CSC442/542 Digital Image Processing
-Date: Spring 2017
-
+Date: 2/9/2017
 --]]
 
 -- LuaIP image processing routines
 require "ip"
 local viz = require "visual"
 
---local color = require "il.color"
-
--- my routines
+-- our lua routines
 local myip = require "intensity"
 local myHist = require "hist"
 local myPseudo = require "pseudoColor"
 local histo = require "il.histo"
 local il = require "il"
+
 -----------
 -- menus --
 -----------
-
 imageMenu("Point Processes",
   {
     {"Negate (RGB)", myip.negateRGB},
     {"Negate (YIQ)", myip.negateYIQ},
     {"Negate (IHS)", myip.negateIHS},
-    {"Brighten (RGB)", myip.brightenRGB,
-      {{name = "binThresh", type = "number", displaytype = "slider", default = 0, min = -255, max = 255}}},
-    {"Brighten (YIQ)", myip.brightenYIQ,
-      {{name = "binThresh", type = "number", displaytype = "slider", default = 0, min = -255, max = 255}}},
-    {"Brighten (IHS)", myip.brightenIHS,
-      {{name = "binThresh", type = "number", displaytype = "slider", default = 0, min = -255, max = 255}}},
+    {"Brighten/Darken (RGB)", myip.brightenRGB,
+      {{name = "offset", type = "number", displaytype = "slider", default = 0, min = -255, max = 255}}},
+    {"Brighten/Darken (YIQ)", myip.brightenYIQ,
+      {{name = "offset", type = "number", displaytype = "slider", default = 0, min = -255, max = 255}}},
+    {"Brighten/Darken (IHS)", myip.brightenIHS,
+      {{name = "offset", type = "number", displaytype = "slider", default = 0, min = -255, max = 255}}},
     {"Grayscale", myip.grayscale},
     {"Gamma (YIQ)", myip.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
     {"Binary Threshold", myip.binary,
@@ -45,15 +40,17 @@ imageMenu("Point Processes",
     {"Bit Plane Slicing", myip.bitPlane,
       {{name = "bit", type = "number", displaytype = "slider", default = 0, min = 0, max = 7}}},
     })
+  
   imageMenu("Color LUTs", 
     {
-    {"PseudoColor - Specify", myPseudo.pseudoColor,
-      {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
-    {"PseudoColor - 8", myPseudo.pseudoColor},
-    {"PseudoColor - Continuous", myPseudo.continuousColor},
-    {"Posterize", myip.posterize,
-      {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
+      {"PseudoColor - Specify", myPseudo.pseudoColor,
+        {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
+      {"PseudoColor - 8", myPseudo.pseudoColor},
+      {"PseudoColor - Continuous", myPseudo.continuousColor},
+      {"Posterize", myip.posterize,
+        {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
   })
+
 imageMenu("Histogram Processes",
   {
     {"Display Histogram", il.showHistogram,
@@ -68,6 +65,7 @@ imageMenu("Histogram Processes",
     {"Contrast Stretch - Auto", myHist.contrastStretch},
     {"Logarithmic Compression", myPseudo.logCompression},
   })
+
 imageMenu("Weiss Processes",
   {
     {"IHStogram Equalize YIQ", histo.equalizeYIQ},
@@ -84,8 +82,8 @@ imageMenu("Weiss Processes",
 
 imageMenu("Help",
   {
-    { "Help", viz.imageMessage( "Help", "Under the File menu a user can open a new image, save the current image or exit the program.\n\nBy right clicking on the image tab, the user can duplicate or reload the image.\n\nThe Point Processes menu item hold all the different point processes you can use on your image. They also indicate what color model is used in the calculations.\n\nFinally, the Histogram Processes menu has the display histogram as well as the processes that are calculated using the histogram of the image." ) },
-    { "About", viz.imageMessage( "Lua Image Point Processing" .. viz.VERSION, "Authors: Katie MacMillan and Forrest Miller\nClass: CSC442 Digital Image Processing\nDate: February 9th, 2017" ) },
+    {"Help", viz.imageMessage("Help", "Under the File menu a user can open a new image, save the current image or exit the program.\n\nBy right clicking on the image tab, the user can duplicate or reload the image.\n\nThe Point Processes menu item hold all the different point processes you can use on your image. They also indicate what color model is used in the calculations.\n\nFinally, the Histogram Processes menu has the display histogram as well as the processes that are calculated using the histogram of the image.")},
+    {"About", viz.imageMessage("Lua Image Point Processing" .. viz.VERSION, "Authors: Katie MacMillan and Forrest Miller\nClass: CSC442 Digital Image Processing\nDate: February 9th, 2017")},
   }
 )
 start()
