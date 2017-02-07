@@ -31,18 +31,17 @@ imageMenu("Point Processes",
     {"Negate (RGB)", myip.negate,
       {{name = "Color Mode", type = "string", default = "rgb"}}},
     {"Brighten/Darken", myip.brighten,
-      {{name = "offset", type = "number", displaytype = "slider", default = 0, min = -255, max = 255},
+      {{name = "Offset", type = "number", displaytype = "slider", default = 0, min = -255, max = 255},
         {name = "Color Mode", type = "string", default = "rgb"}}},
     {"Adjust Contrast", myip.contrast,
-      {{name = "Min Intensity Offset", type = "number", displaytype = "spin", default = 0, min = -100, max = 100},
-        {name = "Max Intensity Offset", type = "number", displaytype = "spin", default = 0, min = -100, max = 100},
+      {{name = "Adjustment", type = "number", displaytype = "slider", default = 0, min = -128, max = 128},
         {name = "Color Mode", type = "string", default = "rgb"}}},
     {"Grayscale", myip.grayscale},
     {"Binary Threshold", myip.binary,
-      {{name = "binThresh", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
+      {{name = "Threshold", type = "number", displaytype = "slider", default = 128, min = 0, max = 255}}},
     {"Bit Plane Slicing", myip.bitPlane,
-      {{name = "bit", type = "number", displaytype = "slider", default = 0, min = 0, max = 7}}},
-    {"Gamma (YIQ)", myip.gamma, {{name = "gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
+      {{name = "Bit (0 is LSB)", type = "number", displaytype = "spin", default = 0, min = 0, max = 7}}},
+    {"Gamma (YIQ)", myip.gamma, {{name = "Gamma", type = "number", displaytype = "textbox", default = "1.0"}}},
     })
   
   -- color processes
@@ -53,7 +52,7 @@ imageMenu("Point Processes",
       {"PseudoColor - 8", myPseudo.pseudoColor},
       {"PseudoColor - Continuous", myPseudo.continuousColor},
       {"Posterize", myip.posterize,
-        {{name = "levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
+        {{name = "Levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
   })
 
 -- histogram processes

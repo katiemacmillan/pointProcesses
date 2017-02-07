@@ -204,28 +204,23 @@ local function bitPlane(img, plane)
 end
 
 
-local function contrast(img, minOff, maxOff, mode)
-  local scale = ((255+maxOff) - minOff)/255
-  local min = 0 + minOff
-  local max = 255 + maxOff
-  if min < 0 then min = 0 end
-  if max > 255 then max = 255 end
-  
-  img = imgFromRGB(img, mode)
+local function contrast(img, contrast, mode)
+  local scale = ( 256 * ( contrast + 256 ) ) / ( 256 * ( 256 - contrast ) )
+  img = imgFromRGB( img, mode )
   img = img:mapPixels(
     function( r, g, b )
-      r = r*scale
-      if r < min then r = 0
-      elseif r > max then r = 255 end
+      r = scale * ( r   - 128) + 128
+      if r < 0 then r = 0
+      elseif r > 255 then r = 255 end
       
       if mode == "rgb" then
-        g = g*scale
-        if g < min then g = 0
-        elseif g > max then g = 255 end
+        g = scale * ( g   - 128) + 128
+        if g < 0 then g = 0
+        elseif g > 255 then g = 255 end
       
-        b = b*scale
-        if b < min then b = 0
-        elseif b > max then b = 255 end
+        b = scale * ( b   - 128) + 128
+        if b < 0 then b = 0
+        elseif b > 255 then b = 255 end
       end
       
       return r, g, b
