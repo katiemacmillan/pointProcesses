@@ -5,6 +5,7 @@ local color = require "il.color"
 -- after ignoring a percentage threshold
 -------------------------------------------------
 local function getIndexMin(hist, pMin)
+  -- index of minimum value
   local iMin = 1
   local sum = 0
   
@@ -12,11 +13,14 @@ local function getIndexMin(hist, pMin)
   while hist[iMin] == 0 do
     iMin = iMin + 1
   end
-  -- ignore bottom fudge factor pixels to get adjusted iMin
-  while sum < pMin do
-    sum = sum + hist[iMin]
-    iMin = iMin + 1
+  if pMin ~= nil then
+    -- ignore bottom fudge factor pixels to get adjusted iMin
+    while sum < pMin do
+      sum = sum + hist[iMin]
+      iMin = iMin + 1
+    end
   end
+  
     return iMin
 end
 -------------------------------------------------
@@ -31,11 +35,15 @@ local function getIndexMax(hist, pMax)
   while hist[iMax] == 0 do
     iMax = iMax - 1
   end
-  -- ignore bottom fudge factor pixels to get adjusted iMin
-  while sum < pMax do
-    sum = sum + hist[iMax]
-    iMax = iMax - 1
+  
+  if pMax ~= nil then
+    -- ignore bottom fudge factor pixels to get adjusted iMin
+    while sum < pMax do
+      sum = sum + hist[iMax]
+      iMax = iMax - 1
+    end
   end
+  
     return iMax
 end
 
@@ -43,50 +51,73 @@ end
 -- create & return a histogram of an image
 local function getHistogram( img )
   -- create new array for histogram
-  h = {}
-  
+  local h = {}
+  local sum = 0
   -- initialize each intensity to 0
   for i=1, 256 do
     h[i] = 0
   end
   
-  -- get number of rows and columns in image
-  local nrows, ncols = img.height, img.width
-  -- for each pixel in the image
-  for r = 0, nrows-1 do
-    for c = 0, ncols-1 do
-      i = img:at(r,c).y + 1
-      -- increment intensity count in histogram
-      h[i] = h[i] + 1
+  -- sum pixels per intensity into array h
+  img = img:mapPixels(
+    function( r, g, b )
+      local i = r + 1
+         h[i] = h[i] + 1
+      return r, g, b
     end
-  end  
-  -- return the histogram array
-  return h
+  )
+  
+  return h, sum
 end
 
+local function getHistogramAverage(hist)
+  local sum = 0
+  for i = 1, 256 do
+    sum = sum + hist[i]
+  end
+  
+  -- return average of intensity counts
+  return sum/256  
+end
 -- Total equalization
-local function equalizeLUT(alpha, hist, pMin, pMax)
+local function clipHistogram( hist, clip)
+  -- get average pixels per intensity
+  local avg = getHistogramAverage(hist)
+  -- track total pixels in the histogram
+  local sum = 0
+  
+  for i = 1, 256 do
+    -- check if intensity has more than clip*avg pixels, if so clip it
+    if hist[i] > (clip * avg) then
+      hist[i] = clip * avg
+    end
+    sum = sum + hist[i]
+  end
+  
+  return hist, sum
+end
+
+local function equalizeLUT( img, clip )
   local lut = {}
-  local iMax = getIndexMax(hist, pMax)
-  local iMin = getIndexMin(hist, pMin)
+  local sum = 0
   
-  for i = 1, iMin-1 do
-    lut[i] = 0
-  end
+  local hist = getHistogram ( img )
+  local avg = getHistogramAverage(hist)
+  hist, sum = clipHistogram(hist, clip)
+  -- get max and min intensities
+  local alpha = 255/ sum
   
-  for i = iMax+1, 256 do
-    lut[i] = 255     -- clip to 255
-  end
+  -- set first used intensity position in the array
+  lut[1] = alpha*hist[1]
   
-  lut[iMin] = alpha*hist[iMin]
-  for i=(iMin+1), iMax do
+  -- set remaining array values
+  for i=2, 256 do
     lut[i] = lut[i-1] + (alpha * hist[i])
   end
   
   return lut
 end
 
--- Total equalization
 local function contrastLUT(hist, pMin, pMax)
   local lut = {}
   local iMax = getIndexMax(hist, pMax)
@@ -110,29 +141,11 @@ local function contrastLUT(hist, pMin, pMax)
 end
 
 -- Total equalization
-local function equalize (img, pMin, pMax)
+local function equalize ( img, clip )
   -- convert image to YIQ color mode
   img = color.RGB2YIQ( img )
-  
-  local nrows, ncols = img.height, img.width
-  local pixels = nrows * ncols
-  local alpha = 255/ (nrows * ncols)
-  
-  -- calculate number of pixels to skip on each side
-  local topPercent = 0
-  local bottomPercent = 0
-  
-  -- check for user input ignore percentages
-  if pMin ~= nil then
-    bottomPercent = math.floor((pixels*pMax/100)+0.5)
-  end
-  if pMax ~= nil then
-    topPercent = math.floor((pixels*pMin/100)+0.5)
-  end
-
-  local hist = getHistogram (img)
   -- create look up table for each gray value
-  local lut = equalizeLUT(alpha, hist, bottomPercent, topPercent)
+  local lut = equalizeLUT( img, clip )
   
   img = img:mapPixels(
     function( r, g, b )
