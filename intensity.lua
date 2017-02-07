@@ -48,7 +48,18 @@ local function toBin(num)
   return binary
 end
 
--- negate/invert image
+--[[
+  Function Name: negate
+  
+  Author: Katie MacMillan
+  
+  Description: The negate function subtracts the r (intensity) value from 255 in order to negate the image. If the user specified rbg mode then the g and b values are also subtracted from 255. Each color model gives a slightly different looking negate.
+  
+  Params: img - the image that the process will be done to
+          mode - which color model the user wishes to use
+  
+  Returns: img after it has been converted back to RGB
+--]]
 local function negate( img, mode )
   img = imgFromRGB(img, mode)
   img = img:mapPixels(
