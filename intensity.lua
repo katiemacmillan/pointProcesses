@@ -11,8 +11,6 @@ Date: Spring 2017
 
 --]]
 
-require "ip"
-local il = require "il"
 local color = require "il.color"
 -----------------
 -- IP routines --
@@ -34,15 +32,19 @@ local function imgFromRGB( img, mode )
   end
   return img
 end
-local function toBin(num)
-  local binary={}
-  while num>0 do
-    remainder = num%2
-    table.insert(binary,1,remainder)
-    num=(num-remainder)/2
+local function toBin( num )
+  local binary = {}
+  
+  -- conver the number to a bit string
+  while num > 0 do
+    remainder = num % 2 -- get a big
+    table.insert( binary, 1 , remainder ) -- add bit to the front of the bit string
+    num = ( num - remainder ) / 2 -- subtract the bit from the number and divide by 2
   end 
-  while table.getn(binary) < 8 do
-    table.insert(binary, 1, 0)
+  
+  -- insert 0s at the front of the array until we have 8 bits
+  while table.getn( binary ) < 8 do
+    table.insert( binary, 1, 0 )
   end
   
   return binary
@@ -50,7 +52,7 @@ end
 
 -- negate/invert image
 local function negate( img, mode )
-  img = imgFromRGB(img, mode)
+  img = imgFromRGB( img, mode )
   img = img:mapPixels(
     function( r, g, b )
       r = 255 - r
@@ -63,11 +65,11 @@ local function negate( img, mode )
     end
   )
   
-  return imgToRGB(img, mode)
+  return imgToRGB( img, mode )
 end
 
 local function brighten( img, offset, mode )
-  img = imgFromRGB(img, mode)
+  img = imgFromRGB( img, mode )
   img = img:mapPixels(
     function( r, g, b )
       r = r + offset
@@ -85,14 +87,14 @@ local function brighten( img, offset, mode )
       return r, g, b
     end
   )
-   return   imgToRGB(img, mode)
+   return   imgToRGB( img, mode )
 end
 
 -- convert image to graysale
 local function grayscale( img )
   img = img:mapPixels(
     function( r, g, b )
-      local i = (r*0.3) + (g*0.59) + (b*0.11)
+      local i = ( r * 0.3 ) + ( g * 0.59 ) + ( b * 0.11 )
       return i, i, i
     end
   )
@@ -104,7 +106,7 @@ local function gamma( img, gamma )
   local nrows, ncols = img.height, img.width
   
   -- convert from RGB to YIQ
-  img = il.RGB2YIQ(img)
+  img = il.RGB2YIQ( img )
   
   local res = img:clone()
   local gam = gamma
@@ -116,13 +118,13 @@ local function gamma( img, gamma )
   -- for each pixel in the image
   for r = 1, nrows-2 do
     for c = 1, ncols-2 do
-      local orig = img:at(r,c).y/255
+      local orig = img:at( r, c ).y / 255
       local i = 255 * math.pow( orig, gam )
       
       if i < 0 then i = 0 end
       if i > 255 then i = 255 end
       
-      res:at(r,c).y = i
+      res:at( r, c ).y = i
     end
   end
   
@@ -139,7 +141,7 @@ local function posterizeLUT( levels )
   
   -- stair step
   for i = 0, 256 do
-    lut[i] = 255 / (levels - 1) * math.floor(i * levels / 256)
+    lut[i] = 255 / ( levels - 1 ) * math.floor( i * levels / 256 )
   end
     
   return lut
@@ -149,18 +151,18 @@ end
 local function posterize( img, levels )
   local nrows, ncols = img.height, img.width
   -- convert from RGB to YIQ
-  img = il.RGB2YIQ(img)
+  img = il.RGB2YIQ( img )
   
   local res = img:clone()
   
   -- create lut for intensities
-  local lut = posterizeLUT(levels)
+  local lut = posterizeLUT( levels )
   
   for r = 1, nrows-2 do
     for c = 1, ncols-2 do
       -- look up intensity in lut
-      i = img:at(r,c).y
-      res:at(r,c).y = lut[i]
+      i = img:at( r, c ).y
+      res:at( r, c ).y = lut[i]
     end
   end
   
@@ -171,7 +173,7 @@ end
 local function binary( img, binThresh )
    img = img:mapPixels(
     function( r, g, b )
-      local i = (r*0.3) + (g*0.59) + (b*0.11)
+      local i = ( r * 0.3 ) + ( g * 0.59 ) + ( b * 0.11 )
       if i < binThresh then i = 0
       else i = 255 end
       
@@ -182,7 +184,7 @@ local function binary( img, binThresh )
   return img
 end
 
-local function bitPlane(img, plane)
+local function bitPlane( img, plane )
   local nrows, ncols = img.height, img.width
    img = img:mapPixels(
     function( r, g, b )
@@ -204,21 +206,21 @@ local function bitPlane(img, plane)
 end
 
 
-local function contrast(img, contrast, mode)
+local function contrast( img, contrast, mode )
   local scale = ( 256 * ( contrast + 256 ) ) / ( 256 * ( 256 - contrast ) )
   img = imgFromRGB( img, mode )
   img = img:mapPixels(
     function( r, g, b )
-      r = scale * ( r   - 128) + 128
+      r = scale * ( r   - 128 ) + 128 
       if r < 0 then r = 0
       elseif r > 255 then r = 255 end
       
       if mode == "rgb" then
-        g = scale * ( g   - 128) + 128
+        g = scale * ( g   - 128 ) + 128
         if g < 0 then g = 0
         elseif g > 255 then g = 255 end
       
-        b = scale * ( b   - 128) + 128
+        b = scale * ( b   - 128 ) + 128
         if b < 0 then b = 0
         elseif b > 255 then b = 255 end
       end
@@ -226,7 +228,7 @@ local function contrast(img, contrast, mode)
       return r, g, b
     end
   )
-  return imgToRGB(img, mode)
+  return imgToRGB( img, mode )
   
 end
 
