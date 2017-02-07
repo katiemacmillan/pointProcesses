@@ -186,14 +186,17 @@ local function bitPlane(img, plane)
   local nrows, ncols = img.height, img.width
    img = img:mapPixels(
     function( r, g, b )
-      local intensity = (r*0.3) + (g*0.59) + (b*0.11)
-      local i = 0
-      local bin = toBin(intensity)
-      if bin[plane+1] == 1 then i = 255
-      else i = 0 
-      end
+      local bin = toBin( r )
+      if bin[plane+1] == 1 then r = 255
+      else r = 0 end
+      bin = toBin( g )
+      if bin[plane+1] == 1 then g = 255
+    else g = 0 end
+      bin = toBin( b )
+      if bin[plane+1] == 1 then b = 255
+      else b = 0 end
       
-      return i, i, i
+      return r, g, b
     end
   )
   
