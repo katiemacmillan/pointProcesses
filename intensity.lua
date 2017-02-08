@@ -268,7 +268,7 @@ end
 local function posterize( img, levels )
   local nrows, ncols = img.height, img.width
   -- convert from RGB to YIQ
-  img = il.RGB2YIQ( img )
+  img = color.RGB2YIQ( img )
   
   local res = img:clone()
   
@@ -283,7 +283,7 @@ local function posterize( img, levels )
     end
   end
   
-  return il.YIQ2RGB( res )
+  return color.YIQ2RGB( res )
 end
 
 --[[
