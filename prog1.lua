@@ -30,7 +30,7 @@ imageMenu("Point Processes",
   {
     {"Negate (RGB)", myip.negate,
       {{name = "Color Mode", type = "string", default = "rgb"}}},
-    {"Brighten/Darken", myip.brighten,
+    {"Brighten/Darken", myip.brightDark,
       {{name = "Offset", type = "number", displaytype = "slider", default = 0, min = -255, max = 255},
         {name = "Color Mode", type = "string", default = "rgb"}}},
     {"Adjust Contrast", myip.contrast,

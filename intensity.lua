@@ -1,20 +1,28 @@
 --[[
+  * * * * intensity.lua * * * *
+This file contains most on the point processes an useful helper methods. The
+histogram and pseudocolor functions are located in other files.
 
-  * * * * negate_smooth.lua * * * *
-
-Lua image processing program: performs image negation and smoothing.
-Menu routines are in example2.lua, IP routines are negate_smooth.lua.
-
-Author: John Weiss, Ph.D.
+Author: Katie MacMillan and Forrest Miller
 Class: CSC442/542 Digital Image Processing
-Date: Spring 2017
-
+Date: 2/9/2017
 --]]
 
 local color = require "il.color"
------------------
--- IP routines --
------------------
+
+--[[
+  Function Name: imgToRGB
+  
+  Author: Katie MacMillan
+  
+  Description: The imgToRGB function is a helper function that converts the
+  incoming image from either yiq or ihs to rgb by utilizing Dr.Weiss' ip.lua file.
+  
+  Params: img - the image that needs to be converted
+          mode - which color model we are converting from
+  
+  Returns: img after it has been converted back to RGB
+--]]
 local function imgToRGB( img, mode )
   if mode == "yiq" then
     img = il.YIQ2RGB( img )
@@ -24,6 +32,19 @@ local function imgToRGB( img, mode )
   return img
 end
 
+--[[
+  Function Name: imgFromRGB
+  
+  Author: Katie MacMillan
+  
+  Description: The imgFromRGB function is a helper function that converts the
+  incoming image from rgb to either yiq or ihs using Dr.Weiss' ip.lua file.
+  
+  Params: img - the image that needs to be converted
+          mode - which color model we are converting to
+  
+  Returns: img after it has been converted to the requested color model
+--]]
 local function imgFromRGB( img, mode )
   if mode == "yiq" then
     img = il.RGB2YIQ( img )
@@ -32,10 +53,22 @@ local function imgFromRGB( img, mode )
   end
   return img
 end
+
+--[[
+  Function Name: toBin
+  
+  Author: Katie MacMillan
+  
+  Description: The toBin function...
+  
+  Params: num - ???
+  
+  Returns: binary - ???
+--]]
 local function toBin( num )
   local binary = {}
   
-  -- conver the number to a bit string
+  -- convert the number to a bit string
   while num > 0 do
     remainder = num % 2 -- get a big
     table.insert( binary, 1 , remainder ) -- add bit to the front of the bit string
@@ -55,7 +88,10 @@ end
   
   Author: Katie MacMillan
   
-  Description: The negate function subtracts the r (intensity) value from 255 in order to negate the image. If the user specified rbg mode then the g and b values are also subtracted from 255. Each color model gives a slightly different looking negate.
+  Description: The negate function subtracts the r (intensity) value from 255 in
+  order to negate the image. If the user specified rbg mode then the g and b
+  values are also subtracted from 255. Each color model gives a slightly different
+  looking negate.
   
   Params: img - the image that the process will be done to
           mode - which color model the user wishes to use
@@ -63,11 +99,14 @@ end
   Returns: img after it has been converted back to RGB
 --]]
 local function negate( img, mode )
-  img = imgFromRGB( img, mode )
+  img = imgFromRGB( img, mode ) -- convert from rgb to mode for calculations
+  
+  -- set image by mapping the pixels through a function
   img = img:mapPixels(
     function( r, g, b )
-      r = 255 - r
+      r = 255 - r -- negate the r/y/i value
       if mode == "rgb" then
+        -- if we are in rgb mode, negate the g and b values
         g = 255 - g
         b = 255 - b
       end
@@ -76,10 +115,28 @@ local function negate( img, mode )
     end
   )
   
-  return imgToRGB( img, mode )
+  return imgToRGB( img, mode ) -- return the image after converting back to rgb
 end
 
-local function brighten( img, offset, mode )
+--[[
+  Function Name: brightDark
+  
+  Author: Katie MacMillan
+  
+  Description: The brightDark function uses an offset to either brighten(positive
+  offset) or darken(negative offset) an image. First we convert to whichever color
+  model the user has specified. Then we add the offset to the r of the image,
+  clipping at 0 and 255. If the process is being done in rgb mode then the offset
+  is added to the g and b values, again clipping at 0 and 255. Finally, the image
+  is returned after being converted back to rgb.
+  
+  Params: img    - the image that needs to be converted
+          offset - how much we are supposed to brighten or darken
+          mode   - which color model we are converting from
+  
+  Returns: img after it has been converted back to RGB
+--]]
+local function brightDark( img, offset, mode )
   img = imgFromRGB( img, mode )
   img = img:mapPixels(
     function( r, g, b )
@@ -101,7 +158,19 @@ local function brighten( img, offset, mode )
    return   imgToRGB( img, mode )
 end
 
--- convert image to graysale
+--[[
+  Function Name: brighten
+  
+  Author: Katie MacMillan
+  
+  Description: The brighten function 
+  
+  Params: img    - the image that needs to be converted
+          offset - how mush we are supposed to brighten or darken
+          mode   - which color model we are converting from
+  
+  Returns: img after it has been converted back to RGB
+--]]
 local function grayscale( img )
   img = img:mapPixels(
     function( r, g, b )
@@ -112,7 +181,19 @@ local function grayscale( img )
   return img
 end
 
--- gamma transformation
+--[[
+  Function Name: brighten
+  
+  Author: Forrest Miller
+  
+  Description: The brighten function 
+  
+  Params: img    - the image that needs to be converted
+          offset - how mush we are supposed to brighten or darken
+          mode   - which color model we are converting from
+  
+  Returns: img after it has been converted back to RGB
+--]]
 local function gamma( img, gamma )
   local nrows, ncols = img.height, img.width
   
@@ -142,6 +223,19 @@ local function gamma( img, gamma )
   return il.YIQ2RGB( res )
 end
 
+--[[
+  Function Name: brighten
+  
+  Author: Forrest Miller
+  
+  Description: The brighten function 
+  
+  Params: img    - the image that needs to be converted
+          offset - how mush we are supposed to brighten or darken
+          mode   - which color model we are converting from
+  
+  Returns: img after it has been converted back to RGB
+--]]
 local function posterizeLUT( levels )
   local lut = {}
   
@@ -158,7 +252,19 @@ local function posterizeLUT( levels )
   return lut
 end
 
--- posterize image
+--[[
+  Function Name: brighten
+  
+  Author: Forrest Miller
+  
+  Description: The brighten function 
+  
+  Params: img    - the image that needs to be converted
+          offset - how mush we are supposed to brighten or darken
+          mode   - which color model we are converting from
+  
+  Returns: img after it has been converted back to RGB
+--]]
 local function posterize( img, levels )
   local nrows, ncols = img.height, img.width
   -- convert from RGB to YIQ
@@ -180,7 +286,19 @@ local function posterize( img, levels )
   return il.YIQ2RGB( res )
 end
 
--- convert to binary image
+--[[
+  Function Name: brighten
+  
+  Author: Forrest Miller and Katie MacMillan
+  
+  Description: The brighten function 
+  
+  Params: img    - the image that needs to be converted
+          offset - how mush we are supposed to brighten or darken
+          mode   - which color model we are converting from
+  
+  Returns: img after it has been converted back to RGB
+--]]
 local function binary( img, binThresh )
    img = img:mapPixels(
     function( r, g, b )
@@ -195,6 +313,19 @@ local function binary( img, binThresh )
   return img
 end
 
+--[[
+  Function Name: brighten
+  
+  Author: Katie MacMillan
+  
+  Description: The brighten function 
+  
+  Params: img    - the image that needs to be converted
+          offset - how mush we are supposed to brighten or darken
+          mode   - which color model we are converting from
+  
+  Returns: img after it has been converted back to RGB
+--]]
 local function bitPlane( img, plane )
   local nrows, ncols = img.height, img.width
    img = img:mapPixels(
@@ -216,7 +347,19 @@ local function bitPlane( img, plane )
   return img
 end
 
-
+--[[
+  Function Name: brighten
+  
+  Author: Katie MacMillan
+  
+  Description: The brighten function 
+  
+  Params: img    - the image that needs to be converted
+          offset - how mush we are supposed to brighten or darken
+          mode   - which color model we are converting from
+  
+  Returns: img after it has been converted back to RGB
+--]]
 local function contrast( img, contrast, mode )
   local scale = ( 256 * ( contrast + 256 ) ) / ( 256 * ( 256 - contrast ) )
   img = imgFromRGB( img, mode )
@@ -246,10 +389,9 @@ end
 ------------------------------------
 -------- exported routines ---------
 ------------------------------------
-
 return {
   negate = negate,
-  brighten = brighten,
+  brightDark = brightDark,
   contrast = contrast,
   grayscale = grayscale,
   binary = binary,
