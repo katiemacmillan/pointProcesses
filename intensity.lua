@@ -394,6 +394,33 @@ local function contrast( img, min, max )
 
 end
 
+--[[
+  Function Name: solarize
+  
+  Author: Katie MacMillan
+  
+  Description: The solarize function takes in a threshold value
+  and any color channel intensity that is below the threshold
+  is negated
+  
+  Params: img    - the image that needs to be converted
+          threshold - the value which determines if a color intensity is inverted
+  
+  Returns: img after its pixels have been remapped
+--]]
+local function solarize (img, threshold)
+  img = img:mapPixels(
+    function( r, g, b )
+      if r < threshold then r = 255 - r end
+      if g < threshold then g = 255 - g end
+      if b < threshold then b = 255 - b end
+      return r, g, b
+    end
+  )
+
+  return img
+end
+
 ------------------------------------
 -------- exported routines ---------
 ------------------------------------
@@ -406,4 +433,5 @@ return {
   gamma = gamma,
   posterize = posterize,
   bitPlane = bitPlane,
+  solarize = solarize
 }
