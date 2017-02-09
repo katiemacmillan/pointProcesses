@@ -7,7 +7,7 @@ Author: Katie MacMillan and Forrest Miller
 Class: CSC442/542 Digital Image Processing
 Date: 2/9/2017
 --]]
-local color = "il.color"
+local color = require "il.color"
 --[[
   Function Name: clip
   

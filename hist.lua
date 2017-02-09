@@ -116,7 +116,7 @@ local function equalizeLUT( img, clip )
   -- set remaining array values
   for i=2, 256 do
     lut[i] = lut[i - 1] + (alpha * hist[i])
-    lut[i] = clip( lut[i] )
+    lut[i] = help.clip( lut[i] )
   end
 
   return lut

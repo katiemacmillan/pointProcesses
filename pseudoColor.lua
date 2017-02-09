@@ -9,6 +9,8 @@ Date: 2/9/2017
 --]]
 
 local color = require "il.color"
+local help = require "helpers"
+
 --[[
   Name: colorMap
   
