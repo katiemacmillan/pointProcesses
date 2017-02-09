@@ -270,7 +270,7 @@ local function posterize( img, levels )
   local nrows, ncols = img.height, img.width
   -- convert from RGB to YIQ
   img = color.RGB2YIQ( img )
-
+  
   local res = img:clone()
 
   -- create lut for intensities
@@ -283,7 +283,7 @@ local function posterize( img, levels )
       res:at( r, c ).y = lut[i]
     end
   end
-
+  
   return color.YIQ2RGB( res )
 end
 

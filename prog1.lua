@@ -28,7 +28,7 @@ local threshold = require "il.threshold"
 -- point processes menu
 imageMenu("Point Processes",
   {
-    {"Negate (RGB)", myip.negate,
+    {"Negate", myip.negate,
       {{name = "Color Mode", type = "string", default = "rgb"}}},
     {"Brighten/Darken", myip.brightDark,
       {{name = "Offset", type = "number", displaytype = "slider", default = 0, min = -255, max = 255},
@@ -53,7 +53,7 @@ imageMenu("Point Processes",
         {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
       {"PseudoColor - 8", myPseudo.pseudoColor},
       {"PseudoColor - Continuous", myPseudo.continuousColor},
-      {"Posterize", myip.posterize,
+      {"Posterize (YIQ)", myip.posterize,
         {{name = "Levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
   })
 
