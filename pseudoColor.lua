@@ -1,6 +1,22 @@
+--[[
+  * * * * lut.lua * * * *
+This file contains image process functions that require lookup tables,
+but do not involve histograms. Most of these involve color-maps.
+
+Author: Katie MacMillan and Forrest Miller
+Class: CSC442/542 Digital Image Processing
+Date: 2/9/2017
+--]]
 
 local color = require "il.color"
--- pseudocolor color map
+--[[
+  Name: colorMap
+  
+  Description: The colorMap is a pre-defined variable which is
+  used as a lookup table for the continuous pseudocolor color
+  mapping, and is used to create discrete pseudocolor lookup tables.
+  
+--]]
 local colorMap = {
   {0, 0, 0},
   {0, 0, 7},
@@ -259,90 +275,223 @@ local colorMap = {
   {255, 238, 255},
   {255, 245, 255},
 }
+--[[
+  Function Name: pseudoColorLUT
+  
+  Author: Katie MacMillan
+
+  Description: The pseudoColorLUT function 
+  
+  Params: levels  - the number of discrete pseudocolor levels to be generated
+          specify - a boolean indicating whether the levels are user specified
+  
+  Returns: a discrete pseudocolor lookup table
+--]]
 local function pseudoColorLUT(levels, specify)
   local lut = {}
+  -- determine the size of each color zone
   local zones = math.floor((256/levels) + 0.5)
+  -- start the color map base at position 1 (0)
   local cm = 1
- 
+  -- if the levels are user specified, start in a random position in the color map
  if specify then
     math.randomseed(os.time())
     local rand = math.random()*1000
     cm = (math.floor(rand+0.5))%256
   end
   
-  local i = 1
+  i = 1
   while i < 257 do
-    local j = 0
+    local j = 0 -- tracks the number of positions in a color zone
     while j < zones do
+    -- fill each zone with the same color
       lut[i] = colorMap[cm]
       j = j + 1
       i = i+1
     end
+    -- move color map position to next zone intensity
     cm = (cm + zones)%256
   end
   
   return lut
 end
 
-local function logarithmicLUT()
-  local lut = {}
-  local c = (255/(math.log(255)))
-  for i = 1, 256 do
-    lut[i] = math.floor((c*(math.log(i)))+0.5)
-    if lut[i] > 255 then lut[i] = 255 end
-  end
+--[[
+  Function Name: pseudoColor
   
+  Author: Katie MacMillan
+
+  Description: The pseudoColor function utilizes a colormap lookup
+  table of discrete color values to map each pixel intensity to
+  an arbitrary color
   
-  return lut
-end
--- create & return a histogram of an image
+  Params: img    - the image that needs to be converted
+          levels - the number of discrete color levels to be used
+  
+  Returns: img after it has been converted to a pseudocolor image
+--]]
 local function pseudoColor( img, levels )
+  -- assume the user passed in number of discrete levels
   local specify = true
+  -- if no levels indicated, default is 8 and specify is false
   if levels == nil then 
     levels = 8
     specify = false
   end
   -- get number of rows and columns in image
-  local LUT = pseudoColorLUT(levels, specify)
+  local lut = pseudoColorLUT(levels, specify)
   -- for each pixel in the image
   img = img:mapPixels(
     function( r, g, b )
+      -- get the intensity of the pixel, plus 1 because lua is 1 indexed
       local i = math.floor((r*0.3) + (g*0.59) + (b*0.11)+0.5) + 1
-      return LUT[i][1], LUT[i][2], LUT[i][3]
+      -- map each channel to the corresponding lookup table channel
+      return lut[i][1], lut[i][2], lut[i][3]
     end
   )
-  -- return the histogram array
   return img
 end
 
 
--- create & return a histogram of an image
+--[[
+  Function Name: continuousColor
+  
+  Author: Katie MacMillan
+
+  Description: The continuousColor function utilizes the colorMap lookup table
+  to assign each pixel intensity in an image to an arbitrary, pre-defined color.
+  These color values are incremented in small steps, giving a continuous effect.
+  
+  Params: img - the image that needs to be converted
+  
+  Returns: img after it has been converted to continuous pseudocolor
+--]]
 local function continuousColor(img)  
   -- for each pixel in the image
   img = img:mapPixels(
     function( r, g, b )
+      -- get pixel intensity, plus 1 because lua is 1 indexed
       local i = math.floor((r*0.3) + (g*0.59) + (b*0.11)+0.5) + 1
+      -- map each channel to the corresponding channel at the intensity index of the color map
       return colorMap[i][1], colorMap[i][2], colorMap[i][3]
     end
   )
-  -- return the histogram array
   return img
 end
 
 
 
+--[[
+  Function Name: logarithmicLUT
+  
+  Author: Katie MacMillan
+
+  Description: The logarithmicLUT function creates a lookup table
+  which compresses intensity values by mapping several to the same
+  intensity through the use of logarithms.
+    
+  Returns: the logarithm based lookup table
+--]]
+local function logarithmicLUT()
+  local lut = {}
+  -- set a constant multiplier
+  local c = (255/(math.log(255)))
+  -- get the logarithm times the multiplier of each intensity
+  for i = 1, 256 do
+    lut[i] = math.floor((c*(math.log(i)))+0.5)
+    lut[i] = help.clip(lut[i])
+  end
+    
+  return lut
+end
+--[[
+  Function Name: logCompression
+  
+  Author: Katie MacMillan
+
+  Description: The logCompression function utilizes a lookup table which maps
+  intensity values to their log values times a multiplier. The effect is that
+  many intensities will map to the same intensity.
+  
+  Params: img - the image that needs to be converted
+  
+  Returns: img after it has been converted back to RGB
+--]]
 local function logCompression(img)
-  local LUT = logarithmicLUT()
-  img = color.RGB2YIQ(img)
-  -- for each pixel in the image
-  img = img:mapPixels(
-    function( r, g, b )
-      return LUT[r+1], g, b
+  local lut = logarithmicLUT()
+  cpy = img:clone()
+  cpy = color.RGB2YIQ(img)
+  
+  cpy = cpy:mapPixels(
+    function( y, i, q )
+      -- map pixels to the log lookuptable
+      return lut[y+1], i, q
     end
   )
   -- return the histogram array
-  return color.YIQ2RGB(img)
+  return color.YIQ2RGB(cpy)
 end
+
+--[[
+  Function Name: brighten
+  
+  Author: Forrest Miller
+  
+  Description: The brighten function 
+  
+  Params: img    - the image that needs to be converted
+          offset - how mush we are supposed to brighten or darken
+          mode   - which color model we are converting from
+  
+  Returns: img after it has been converted back to RGB
+--]]
+local function posterizeLUT( levels )
+  local lut = {}
+
+  -- initialize to 0
+  for i = 0, 256 do
+    lut[i] = 0
+  end
+
+  -- stair step
+  for i = 0, 256 do
+    lut[i] = 255 / ( levels - 1 ) * math.floor( i * levels / 256 )
+  end
+
+  return lut
+end
+
+--[[
+  Function Name: posterize
+  
+  Author: Forrest Miller
+  
+  Description: The poserize function 
+  
+  Params: img    - the image that needs to be converted
+          levels - 
+  
+  Returns: img after it has been converted back to RGB
+--]]
+local function posterize( img, levels )
+  local nrows, ncols = img.height, img.width
+  -- convert from RGB to YIQ
+  img = color.RGB2YIQ( img )
+  
+  local res = img:clone()
+
+  -- create lut for intensities
+  local lut = posterizeLUT( levels )
+
+  res = img:mapPixels(
+    function(y, i, q) 
+      y = lut[y]
+      return y, i, q
+    end)
+  
+  return color.YIQ2RGB( res )
+end
+
 
 ------------------------------------
 -------- exported routines ---------
@@ -351,5 +500,7 @@ end
 return {
   pseudoColor = pseudoColor,
   continuousColor = continuousColor,
-  logCompression = logCompression
+  logCompression = logCompression,
+  posterize = posterize,
+
 }

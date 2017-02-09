@@ -1,7 +1,7 @@
 --[[
   * * * * intensity.lua * * * *
-This file contains most on the point processes an useful helper methods. The
-histogram and pseudocolor functions are located in other files.
+This file contains basic arithmetic (additive, subtractive, scaled), and binary 
+point process operation fuctions.
 
 Author: Katie MacMillan and Forrest Miller
 Class: CSC442/542 Digital Image Processing
@@ -9,80 +9,7 @@ Date: 2/9/2017
 --]]
 
 local color = require "il.color"
-
---[[
-  Function Name: imgToRGB
-  
-  Author: Katie MacMillan
-  
-  Description: The imgToRGB function is a helper function that converts the
-  incoming image from either yiq or ihs to rgb by utilizing Dr.Weiss' ip.lua file.
-  
-  Params: img - the image that needs to be converted
-          mode - which color model we are converting from
-  
-  Returns: img after it has been converted back to RGB
---]]
-local function imgToRGB( img, mode )
-  if mode == "yiq" then
-    img = color.YIQ2RGB( img )
-  elseif mode == "ihs" then
-    img = color.IHS2RGB( img )
-  end
-  return img
-end
-
---[[
-  Function Name: imgFromRGB
-  
-  Author: Katie MacMillan
-  
-  Description: The imgFromRGB function is a helper function that converts the
-  incoming image from rgb to either yiq or ihs using Dr.Weiss' ip.lua file.
-  
-  Params: img - the image that needs to be converted
-          mode - which color model we are converting to
-  
-  Returns: img after it has been converted to the requested color model
---]]
-local function imgFromRGB( img, mode )
-  if mode == "yiq" then
-    img = color.RGB2YIQ( img )
-  elseif mode == "ihs" then
-    img = color.RGB2IHS( img )
-  end
-  return img
-end
-
---[[
-  Function Name: toBin
-  
-  Author: Katie MacMillan
-  
-  Description: The toBin function converts a pixel intensity value to a
-  binary string
-  
-  Params: num - intensity value to be converted to binary
-  
-  Returns: binary - binary string representation of num
---]]
-local function toBin( num )
-  local binary = {}
-
-  -- convert the number to a bit string
-  while num > 0 do
-    local remainder = num % 2 -- get a big
-    table.insert( binary, 1 , remainder ) -- add bit to the front of the bit string
-    num = ( num - remainder ) / 2 -- subtract the bit from the number and divide by 2
-  end 
-
-  -- insert 0s at the front of the array until we have 8 bits
-  while table.getn( binary ) < 8 do
-    table.insert( binary, 1, 0 )
-  end
-
-  return binary
-end
+local help = require "helpers"
 
 --[[
   Function Name: negate
@@ -94,16 +21,17 @@ end
   values are also subtracted from 255. Each color model gives a slightly different
   looking negate.
   
-  Params: img - the image that the process will be done to
+  Params: img  - the image that the process will be done to
           mode - which color model the user wishes to use
   
   Returns: img after it has been converted back to RGB
 --]]
 local function negate( img, mode )
-  img = imgFromRGB( img, mode ) -- convert from rgb to mode for calculations
+  local cpy = img:clone()
+  cpy = help.imgFromRGB( cpy, mode ) -- convert from rgb to mode for calculations
 
   -- set image by mapping the pixels through a function
-  img = img:mapPixels(
+  cpy = cpy:mapPixels(
     function( r, g, b )
       r = 255 - r -- negate the r/y/i value
       if mode == "rgb" then
@@ -116,7 +44,7 @@ local function negate( img, mode )
     end
   )
 
-  return imgToRGB( img, mode ) -- return the image after converting back to rgb
+  return help.imgToRGB( cpy, mode ) -- return the image after converting back to rgb
 end
 
 --[[
@@ -138,29 +66,25 @@ end
   Returns: img after it has been converted back to RGB
 --]]
 local function brightDark( img, offset, mode )
-  img = imgFromRGB( img, mode ) -- convert to selected mode
+  local cpy = img:clone()
   
-  img = img:mapPixels(
+  cpy = help.imgFromRGB( cpy, mode )
+  
+  cpy = cpy:mapPixels(
     function( r, g, b )
-      r = r + offset -- add the offset to the i value
-      if r > 255 then r = 255
-      elseif r < 0 then r = 0 end -- clip value to 0 and 255
-    
-      -- if we are rgb mode add the offset to g and b and clip at 0 and 255
+      r = help.clip(r + offset)
+      
+      -- if we are in rgb mode add the offset to g and b
       if mode == "rgb" then
-        g = g + offset
-        if g > 255 then g = 255
-        elseif g < 0 then g = 0 end
-        b = b + offset
-        if b > 255 then b = 255
-        elseif b < 0 then b = 0 end
+        g = help.clip(g + offset)
+        b = help.clip(b + offset)
       end
 
       return r, g, b
     end
   )
   
-  return   imgToRGB( img, mode ) -- convert back to rgb and return
+  return   help.imgToRGB( cpy, mode )
 end
 
 --[[
@@ -172,7 +96,7 @@ end
   of a each pixel by different percentages to get the pixel's intensity,
   which is then set as the new value of each color channel.
   
-  Params: img    - the image that needs to be converted
+  Params: img - the image that needs to be converted
   
   Returns: img after its pixels have been re-mapped
 --]]
@@ -205,11 +129,10 @@ end
 --]]
 local function gamma( img, gamma )
   local nrows, ncols = img.height, img.width
-
   -- convert from RGB to YIQ
-  img = color.RGB2YIQ( img )
-
   local res = img:clone()
+  res = color.RGB2YIQ( res )
+
   local gam = gamma
 
   if gam <= 0 then
@@ -217,6 +140,7 @@ local function gamma( img, gamma )
   end
 
   -- for each pixel in the image
+--<<<<<<< HEAD
   for r = 1, nrows-2 do
     for c = 1, ncols-2 do
       local orig = img:at( r, c ).y / 255 -- intensity / 255
@@ -232,6 +156,17 @@ local function gamma( img, gamma )
   end
 
   return color.YIQ2RGB( res ) -- convert back and return
+  
+--======= Made it pink...?
+--  res = img:mapPixels(
+--    function (y, i, q)
+--      local orig = y / 255
+--      y = help.clip( 255 * math.pow( orig, gam ) )
+--      return y, i, q
+--    end)
+
+--  return color.YIQ2RGB( res )
+-->>>>>>> 0dc7e611dc82ddc3fcef9d853300904901fbda1b
 end
 
 --[[
@@ -310,9 +245,9 @@ end
   then the pixel's intensity will be set to 255, otherwise it
   will be set to 0.
   
-  Params: img       - the image that needs to be converted
-          binThresh - the intensity value threshold which determines if a pixel is
-                      set to 255 or 0
+  Params:       img - the image that needs to be converted
+          binThresh - the intensity value threshold which determines
+                      if a pixel is set to 255 or 0
   
   Returns: img after it has been converted back to RGB
 --]]
@@ -342,8 +277,8 @@ end
   intensity value is 1, the pixel's intensity will be set to 255, otherwise
   it will be set to 0.
   
-  Params: img    - the image that needs to be converted
-          bit   - the bit which will determine if a pixel intensity is 0 or 255
+  Params: img - the image that needs to be converted
+          bit - the bit which will determine if a pixel intensity is 0 or 255
   
   Returns: img after it has been converted back to RGB
 --]]
@@ -354,7 +289,7 @@ local function bitPlane( img, plane )
       local i = ( r * 0.3 ) + ( g * 0.59 ) + ( b * 0.11 )
       
       -- convert intensity to a binary string
-      local bin = toBin( i )
+      local bin = help.toBinary( i )
       
       -- set all channel intensities to 0 or 255 if the specified bit is high or low
       if bin[plane+1] == 1 then i = 255
@@ -382,35 +317,52 @@ end
   Returns: img after it has been converted back to RGB
 --]]
 local function contrast( img, min, max )
-  img = color.RGB2YIQ( img )
-  local lut = {}
-
-  for i = 1, min - 1 do
-    lut[i] = 0       -- clip to 0
-  end
-
-  for i = max + 1, 256 do
-    lut[i] = 255     -- clip to 255
-  end
-
+  local cpy = img:clone()
+  cpy = color.RGB2YIQ( img )
   local deltaX = max - min  -- find deltaX
-  
-  -- set all remaining intensities to fit between contrasts
-  for i =  min, max do
-    local contrast = ( 255 / deltaX ) * ( i - min ) -- calculate contrast
-    
-    lut[i] = math.floor( contrast + 0.5 ) -- round contrast
-  end
 
+  cpy = cpy:mapPixels(
+    function( y, i, q )
+      if y < min then y = 0
+      elseif y > max then y = 255
+      else 
+        local contrast = ( 255 / deltaX ) * ( y - min ) -- calculate contrast
+        y = math.floor( contrast + 0.5 ) -- round contrast
+      end
+
+      return y, i, q
+    end
+  )
+
+  return color.YIQ2RGB(img)
+end
+
+--[[
+  Function Name: solarize
+  
+  Author: Katie MacMillan
+  
+  Description: The solarize function takes in a threshold value
+  and any color channel intensity that is below the threshold
+  is negated
+  
+  Params:       img - the image that needs to be converted
+          threshold - the value which determines if a color intensity is inverted
+  
+  Returns: img after its pixels have been remapped
+--]]
+local function solarize (img, threshold)
   img = img:mapPixels(
     function( r, g, b )
-      r = lut[r + 1]     
+      if r < threshold then r = 255 - r end
+      if g < threshold then g = 255 - g end
+      if b < threshold then b = 255 - b end
       
       return r, g, b
     end
   )
 
-  return color.YIQ2RGB(img)
+  return img
 end
 
 ------------------------------------
@@ -423,6 +375,6 @@ return {
   grayscale = grayscale,
   binary = binary,
   gamma = gamma,
-  posterize = posterize,
   bitPlane = bitPlane,
+  solarize = solarize
 }
