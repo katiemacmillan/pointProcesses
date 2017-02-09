@@ -433,17 +433,17 @@ local function logCompression(img)
 end
 
 --[[
-  Function Name: brighten
+  Function Name: posterizeLUT
   
   Author: Forrest Miller
   
-  Description: The brighten function 
+  Description: The posterizeLUT function creates a look up table for the posterize
+  intensities so that from 0 to 255 there are as many levels as requested. This is
+  returned to the posterize function for use.
   
-  Params: img    - the image that needs to be converted
-          offset - how mush we are supposed to brighten or darken
-          mode   - which color model we are converting from
+  Params: levels - the number of levels of posterization requested by the user
   
-  Returns: img after it has been converted back to RGB
+  Returns: lut - intensity look up table
 --]]
 local function posterizeLUT( levels )
   local lut = {}
@@ -466,15 +466,17 @@ end
   
   Author: Forrest Miller
   
-  Description: The poserize function 
+  Description: The posterize function converts the image to yiq first. Then a call
+  is made to create the posterize look up table. Then we just look up the
+  intensities in the look up table and return the image after it is converted back
+  to rgb.
   
   Params: img    - the image that needs to be converted
-          levels - 
+          levels - how many levels of posterization the user wants
   
   Returns: img after it has been converted back to RGB
 --]]
 local function posterize( img, levels )
-  local nrows, ncols = img.height, img.width
   -- convert from RGB to YIQ
   img = color.RGB2YIQ( img )
   
@@ -486,12 +488,12 @@ local function posterize( img, levels )
   res = img:mapPixels(
     function(y, i, q) 
       y = lut[y]
+      
       return y, i, q
     end)
   
   return color.YIQ2RGB( res )
 end
-
 
 ------------------------------------
 -------- exported routines ---------
@@ -502,5 +504,4 @@ return {
   continuousColor = continuousColor,
   logCompression = logCompression,
   posterize = posterize,
-
 }
