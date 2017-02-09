@@ -67,14 +67,10 @@ end
 --]]
 local function brightDark( img, offset, mode )
   local cpy = img:clone()
-  
   cpy = help.imgFromRGB( cpy, mode )
-  
   cpy = cpy:mapPixels(
     function( r, g, b )
       r = help.clip(r + offset)
-      
-      -- if we are in rgb mode add the offset to g and b
       if mode == "rgb" then
         g = help.clip(g + offset)
         b = help.clip(b + offset)
@@ -83,7 +79,6 @@ local function brightDark( img, offset, mode )
       return r, g, b
     end
   )
-  
   return   help.imgToRGB( cpy, mode )
 end
 
@@ -128,7 +123,6 @@ end
   Returns: img after it has been converted back to RGB
 --]]
 local function gamma( img, gamma )
-  local nrows, ncols = img.height, img.width
   -- convert from RGB to YIQ
   local res = img:clone()
   res = color.RGB2YIQ( res )
@@ -136,37 +130,18 @@ local function gamma( img, gamma )
   local gam = gamma
 
   if gam <= 0 then
-    gam = 1.0 -- set gamma to the default if it is <= 0
+    gam = 1.0
   end
 
-  -- for each pixel in the image
---<<<<<<< HEAD
-  for r = 1, nrows-2 do
-    for c = 1, ncols-2 do
-      local orig = img:at( r, c ).y / 255 -- intensity / 255
+  res = res:mapPixels(
+    function (y, i, q)
+      local orig = y / 255
       -- raise orig intensity to gamma and multiply by 255
-      local i = 255 * math.pow( orig, gam )
+      y = help.clip( 255 * math.pow( orig, gam ) )
+      return y, i, q
+    end)
 
-      -- clip to 0 and 255
-      if i < 0 then i = 0 end
-      if i > 255 then i = 255 end
-
-      res:at( r, c ).y = i -- set new intensity
-    end
-  end
-
-  return color.YIQ2RGB( res ) -- convert back and return
-  
---======= Made it pink...?
---  res = img:mapPixels(
---    function (y, i, q)
---      local orig = y / 255
---      y = help.clip( 255 * math.pow( orig, gam ) )
---      return y, i, q
---    end)
-
---  return color.YIQ2RGB( res )
--->>>>>>> 0dc7e611dc82ddc3fcef9d853300904901fbda1b
+  return color.YIQ2RGB( res )
 end
 
 --[[
@@ -183,14 +158,13 @@ end
           binThresh - the intensity value threshold which determines
                       if a pixel is set to 255 or 0
   
-  Returns: img after it has been converted back to RGB
+  Returns: img after it has been converted to binary intensities
 --]]
 local function binary( img, binThresh )
   img = img:mapPixels(
     function( r, g, b )
       -- get intensity value of the pixel
       local i = ( r * 0.3 ) + ( g * 0.59 ) + ( b * 0.11 )
-      
       if i < binThresh then i = 0
       else i = 255 end
 
@@ -221,19 +195,16 @@ local function bitPlane( img, plane )
     function( r, g, b )
       -- get intensity value
       local i = ( r * 0.3 ) + ( g * 0.59 ) + ( b * 0.11 )
-      
       -- convert intensity to a binary string
       local bin = help.toBinary( i )
-      
       -- set all channel intensities to 0 or 255 if the specified bit is high or low
       if bin[plane+1] == 1 then i = 255
       else i = 0 end
-    
       return i, i, i
     end
   )
-  
   return img
+
 end
 
 --[[
@@ -244,11 +215,11 @@ end
   Description: The constrast stretch function which allows users to
   specify minimum and maximum intensity values
   
-  Params: img    - the image that needs to be converted
+  Params: img - the image that needs to be converted
           min - the minimum intensity of any pixel
-          max   - the maximum intensity of any pixel
+          max - the maximum intensity of any pixel
   
-  Returns: img after it has been converted back to RGB
+  Returns: img after it has been adjusted and converted back to RGB
 --]]
 local function contrast( img, min, max )
   local cpy = img:clone()
@@ -291,7 +262,6 @@ local function solarize (img, threshold)
       if r < threshold then r = 255 - r end
       if g < threshold then g = 255 - g end
       if b < threshold then b = 255 - b end
-      
       return r, g, b
     end
   )

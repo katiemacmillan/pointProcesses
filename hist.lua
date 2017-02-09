@@ -86,7 +86,7 @@ end
   within a histogram to create a lookup-table which will automatically
   equalize an input image. 
   
-  Params: img  -  the image that needs to be evaluated
+  Params:  img -  the image that needs to be evaluated
           clip -  the maximum percentage of total pixels allowed to be in
                   any given intensity value
   
@@ -172,7 +172,7 @@ end
   to map all of the pixels in an image to a new set of histogram equalized
   pixels.
   
-  Params: img  - the image that needs to be converted
+  Params:  img - the image that needs to be converted
           clip - the maximum percentage of the overal image pixels which can be
                  assigned to any given intensity
           

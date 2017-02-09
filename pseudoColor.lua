@@ -282,7 +282,7 @@ local colorMap = {
 
   Description: The pseudoColorLUT function 
   
-  Params: levels  - the number of discrete pseudocolor levels to be generated
+  Params:  levels - the number of discrete pseudocolor levels to be generated
           specify - a boolean indicating whether the levels are user specified
   
   Returns: a discrete pseudocolor lookup table
@@ -325,7 +325,7 @@ end
   table of discrete color values to map each pixel intensity to
   an arbitrary color
   
-  Params: img    - the image that needs to be converted
+  Params:    img - the image that needs to be converted
           levels - the number of discrete color levels to be used
   
   Returns: img after it has been converted to a pseudocolor image
@@ -415,7 +415,7 @@ end
   
   Params: img - the image that needs to be converted
   
-  Returns: img after it has been converted back to RGB
+  Returns: img after it has been log compressed
 --]]
 local function logCompression(img)
   local lut = logarithmicLUT()
@@ -471,24 +471,22 @@ end
   intensities in the look up table and return the image after it is converted back
   to rgb.
   
-  Params: img    - the image that needs to be converted
+  Params:    img - the image that needs to be converted
           levels - how many levels of posterization the user wants
   
   Returns: img after it has been converted back to RGB
 --]]
 local function posterize( img, levels )
-  -- convert from RGB to YIQ
-  img = color.RGB2YIQ( img )
-  
   local res = img:clone()
-
+ -- convert from RGB to YIQ
+  res = color.RGB2YIQ( res )
+ 
   -- create lut for intensities
   local lut = posterizeLUT( levels )
 
-  res = img:mapPixels(
+  res = res:mapPixels(
     function(y, i, q) 
-      y = lut[y]
-      
+      y = lut[y]      
       return y, i, q
     end)
   
