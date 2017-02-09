@@ -138,12 +138,15 @@ end
   Returns: img after it has been converted back to RGB
 --]]
 local function brightDark( img, offset, mode )
-  img = imgFromRGB( img, mode )
+  img = imgFromRGB( img, mode ) -- convert to selected mode
+  
   img = img:mapPixels(
     function( r, g, b )
-      r = r + offset
+      r = r + offset -- add the offset to the i value
       if r > 255 then r = 255
-      elseif r < 0 then r = 0 end
+      elseif r < 0 then r = 0 end -- clip value to 0 and 255
+    
+      -- if we are rgb mode add the offset to g and b and clip at 0 and 255
       if mode == "rgb" then
         g = g + offset
         if g > 255 then g = 255
@@ -156,7 +159,8 @@ local function brightDark( img, offset, mode )
       return r, g, b
     end
   )
-  return   imgToRGB( img, mode )
+  
+  return   imgToRGB( img, mode ) -- convert back to rgb and return
 end
 
 --[[
@@ -188,11 +192,14 @@ end
   
   Author: Forrest Miller
   
-  Description: The gamma function 
+  Description: The gamma function starts by converting the image to yiq. Next we
+  ensure that gamma is within the proper range. Then for each pixel we perform a
+  gamma transformation to calculate a new intensity. This value is first clipped
+  between 0 and 255 then set as the new intensity for the pixel. Finally, the
+  image is converted back to rgb and returned.
   
-  Params: img    - the image that needs to be converted
-          offset - how mush we are supposed to brighten or darken
-          mode   - which color model we are converting from
+  Params: img   - the image that needs to be converted
+          gamma - the value chosen by the user for gamma
   
   Returns: img after it has been converted back to RGB
 --]]
@@ -206,37 +213,39 @@ local function gamma( img, gamma )
   local gam = gamma
 
   if gam <= 0 then
-    gam = 1.0
+    gam = 1.0 -- set gamma to the default if it is <= 0
   end
 
   -- for each pixel in the image
   for r = 1, nrows-2 do
     for c = 1, ncols-2 do
-      local orig = img:at( r, c ).y / 255
+      local orig = img:at( r, c ).y / 255 -- intensity / 255
+      -- raise orig intensity to gamma and multiply by 255
       local i = 255 * math.pow( orig, gam )
 
+      -- clip to 0 and 255
       if i < 0 then i = 0 end
       if i > 255 then i = 255 end
 
-      res:at( r, c ).y = i
+      res:at( r, c ).y = i -- set new intensity
     end
   end
 
-  return color.YIQ2RGB( res )
+  return color.YIQ2RGB( res ) -- convert back and return
 end
 
 --[[
-  Function Name: brighten
+  Function Name: posterizeLUT
   
   Author: Forrest Miller
   
-  Description: The brighten function 
+  Description: The posterizeLUT function creates a look up table for the posterize
+  intensities so that from 0 to 255 there are as many levels as requested. This is
+  returned to the posterize function for use.
   
-  Params: img    - the image that needs to be converted
-          offset - how mush we are supposed to brighten or darken
-          mode   - which color model we are converting from
+  Params: levels - the number of levels of posterization requested by the user
   
-  Returns: img after it has been converted back to RGB
+  Returns: lut - intensity look up table
 --]]
 local function posterizeLUT( levels )
   local lut = {}
@@ -259,15 +268,19 @@ end
   
   Author: Forrest Miller
   
-  Description: The brighten function 
+  Description: The posterize function converts the image to yiq first. Then a call
+  is made to create the posterize look up table. Then we just look up the
+  intensities in the look up table and return the image after it is converted back
+  to rgb.
   
   Params: img    - the image that needs to be converted
-          levels   - which color model we are converting from
+          levels - how many levels of posterization the user wants
   
   Returns: img after it has been converted back to RGB
 --]]
 local function posterize( img, levels )
   local nrows, ncols = img.height, img.width
+  
   -- convert from RGB to YIQ
   img = color.RGB2YIQ( img )
   
@@ -284,7 +297,7 @@ local function posterize( img, levels )
     end
   end
   
-  return color.YIQ2RGB( res )
+  return color.YIQ2RGB( res ) -- return converted image
 end
 
 --[[
@@ -297,9 +310,9 @@ end
   then the pixel's intensity will be set to 255, otherwise it
   will be set to 0.
   
-  Params: img    - the image that needs to be converted
-          binThresh   - the intensity value threshold which determines
-                      if a pixel is set to 255 or 0
+  Params: img       - the image that needs to be converted
+          binThresh - the intensity value threshold which determines if a pixel is
+                      set to 255 or 0
   
   Returns: img after it has been converted back to RGB
 --]]
@@ -308,6 +321,7 @@ local function binary( img, binThresh )
     function( r, g, b )
       -- get intensity value of the pixel
       local i = ( r * 0.3 ) + ( g * 0.59 ) + ( b * 0.11 )
+      
       if i < binThresh then i = 0
       else i = 255 end
 
@@ -338,16 +352,19 @@ local function bitPlane( img, plane )
     function( r, g, b )
       -- get intensity value
       local i = ( r * 0.3 ) + ( g * 0.59 ) + ( b * 0.11 )
+      
       -- convert intensity to a binary string
       local bin = toBin( i )
+      
       -- set all channel intensities to 0 or 255 if the specified bit is high or low
       if bin[plane+1] == 1 then i = 255
       else i = 0 end
+    
       return i, i, i
     end
   )
+  
   return img
-
 end
 
 --[[
@@ -369,7 +386,7 @@ local function contrast( img, min, max )
   local lut = {}
 
   for i = 1, min - 1 do
-    lut[i] = 0
+    lut[i] = 0       -- clip to 0
   end
 
   for i = max + 1, 256 do
@@ -377,21 +394,23 @@ local function contrast( img, min, max )
   end
 
   local deltaX = max - min  -- find deltaX
+  
   -- set all remaining intensities to fit between contrasts
   for i =  min, max do
     local contrast = ( 255 / deltaX ) * ( i - min ) -- calculate contrast
+    
     lut[i] = math.floor( contrast + 0.5 ) -- round contrast
   end
 
   img = img:mapPixels(
     function( r, g, b )
-      r = lut[r + 1]      
+      r = lut[r + 1]     
+      
       return r, g, b
     end
   )
 
   return color.YIQ2RGB(img)
-
 end
 
 ------------------------------------
