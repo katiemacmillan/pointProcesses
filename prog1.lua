@@ -53,7 +53,7 @@ imageMenu("Point Processes",
         {{name = "Color Levels", type = "number", displaytype = "spin", default = 60, min = 1, max = 255}}},
       {"PseudoColor - 8", myPseudo.pseudoColor},
       {"PseudoColor - Continuous", myPseudo.continuousColor},
-      {"Posterize (YIQ)", myip.posterize,
+      {"Posterize (YIQ)", myPseudo.posterize,
         {{name = "Levels", type = "number", displaytype = "spin", default = 4, min = 2, max = 64}}},
   })
 
